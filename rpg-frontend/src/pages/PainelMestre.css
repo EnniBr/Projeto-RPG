@@ -1,0 +1,490 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap');
+
+.pm-loading {
+  min-height: 100vh; background-color: #0a0a0a;
+  display: flex; align-items: center; justify-content: center;
+}
+.pm-loading-texto { font-family: 'Crimson Pro', serif; font-size: 1.1rem; color: #555; letter-spacing: 2px; }
+
+.pm-wrapper { min-height: 100vh; background-color: #0a0a0a; color: white; display: flex; flex-direction: column; }
+
+/* ── HEADER ─────────────────────────────────────────────────────────── */
+
+.pm-header {
+  position: sticky; top: 0; z-index: 20;
+  background-color: #0f0f0f; border-bottom: 1px solid #1e1e1e;
+  padding: 0 32px; height: 64px;
+  display: flex; align-items: center; justify-content: space-between; gap: 20px;
+}
+
+.pm-header-esquerda { display: flex; align-items: center; gap: 20px; }
+
+.pm-btn-voltar {
+  background: none; border: 1px solid #333; color: #666;
+  padding: 6px 14px; border-radius: 4px;
+  font-family: 'Crimson Pro', serif; font-size: 0.85rem;
+  cursor: pointer; transition: all 0.15s; white-space: nowrap;
+}
+.pm-btn-voltar:hover { border-color: #8b0000; color: #cc3333; }
+
+.pm-header-sessao { display: flex; align-items: center; gap: 12px; }
+.pm-header-nome { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: 2px; color: white; }
+.pm-header-np {
+  font-family: 'Crimson Pro', serif; font-size: 0.85rem;
+  padding: 2px 10px; border-radius: 20px;
+  border: 1px solid #8b000044; background-color: #8b000011; color: #cc3333;
+}
+
+.pm-header-direita { display: flex; align-items: center; gap: 16px; }
+
+.pm-codigo-wrapper { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.pm-codigo-label { font-family: 'Crimson Pro', serif; font-size: 0.7rem; letter-spacing: 1px; text-transform: uppercase; color: #555; }
+.pm-codigo-bloco { display: flex; align-items: center; gap: 8px; }
+.pm-codigo-valor { font-family: 'Bebas Neue', sans-serif; font-size: 1.2rem; letter-spacing: 4px; color: #f1c40f; }
+.pm-codigo-copiar {
+  padding: 3px 10px; border-radius: 4px;
+  border: 1px solid #f1c40f44; background-color: #f1c40f11; color: #f1c40f;
+  font-family: 'Crimson Pro', serif; font-size: 0.75rem; cursor: pointer; transition: all 0.15s;
+}
+.pm-codigo-copiar:hover { background-color: #f1c40f22; }
+
+.pm-btn-settings {
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 1px solid #333; background-color: transparent; color: #666;
+  font-size: 1rem; cursor: pointer; transition: all 0.15s;
+  display: flex; align-items: center; justify-content: center;
+}
+.pm-btn-settings:hover { border-color: #555; color: #aaa; }
+.pm-btn-settings-ativo { border-color: #8b0000; color: #cc3333; background-color: #8b000011; }
+
+/* ── PAINEL DE CONFIGURAÇÕES ─────────────────────────────────────────── */
+
+.pm-settings-panel {
+  background-color: #0d0d0d; border-bottom: 1px solid #1e1e1e;
+  padding: 20px 32px; display: flex; flex-direction: column; gap: 16px;
+  animation: settingsFade 0.2s ease;
+}
+
+@keyframes settingsFade {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.pm-settings-titulo {
+  font-family: 'Bebas Neue', sans-serif; font-size: 0.9rem;
+  letter-spacing: 2px; color: #555;
+}
+
+.pm-setting-item {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 20px; padding: 14px 16px;
+  background-color: #111; border: 1px solid #1e1e1e; border-radius: 8px;
+}
+
+.pm-setting-info { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+.pm-setting-nome { font-family: 'Crimson Pro', serif; font-size: 0.95rem; font-weight: 600; color: white; }
+.pm-setting-desc { font-family: 'Crimson Pro', serif; font-size: 0.82rem; color: #555; line-height: 1.5; }
+
+/* Toggle button */
+.pm-toggle {
+  padding: 6px 16px; border-radius: 20px; border: 1px solid #333;
+  background-color: #0a0a0a; color: #555;
+  font-family: 'Crimson Pro', serif; font-size: 0.85rem;
+  cursor: pointer; transition: all 0.2s; white-space: nowrap; flex-shrink: 0;
+}
+.pm-toggle-on { border-color: #2ecc71; background-color: #2ecc7111; color: #2ecc71; }
+
+.pm-settings-nota {
+  font-family: 'Crimson Pro', serif; font-size: 0.78rem;
+  color: #333; font-style: italic;
+}
+
+/* Blocos de seção (Jogadores / NPCs) */
+.pm-secao-bloco { display: flex; flex-direction: column; gap: 16px; }
+
+.pm-secao-header {
+  display: flex; align-items: center; gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #1e1e1e;
+}
+
+.pm-secao-nome {
+  font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem;
+  letter-spacing: 2px; color: white; margin: 0;
+}
+
+.pm-secao-count {
+  font-family: 'Crimson Pro', serif; font-size: 0.85rem; color: #555;
+}
+
+.pm-btn-criar-npc {
+  margin-left: auto; padding: 7px 16px;
+  border-radius: 4px; border: 1px solid #8b000055;
+  background-color: #8b000011; color: #cc3333;
+  font-family: 'Crimson Pro', serif; font-size: 0.9rem;
+  cursor: pointer; transition: all 0.15s;
+}
+.pm-btn-criar-npc:hover { background-color: #8b000033; border-color: #cc3333; }
+
+.pm-codigo-destaque { color: #f1c40f; }
+
+/* Vazio */
+.pm-vazio {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: 140px; gap: 8px;
+  font-family: 'Crimson Pro', serif; font-size: 1rem; color: #666; text-align: center;
+  background-color: #0f0f0f; border: 1px dashed #1e1e1e; border-radius: 8px;
+}
+
+.pm-vazio-npc { min-height: 100px; }
+
+/* Grade */
+.pm-grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 16px; align-items: start; }
+
+/* ── CARD ───────────────────────────────────────────────────────────── */
+
+.pm-card {
+  background-color: #111; border: 1px solid #1e1e1e; border-radius: 10px;
+  overflow: hidden; display: flex; flex-direction: column; transition: border-color 0.2s;
+}
+.pm-card:hover { border-color: #333; }
+.pm-card-perigo { border-color: #8b000066; animation: pm-perigo-pulse 2s ease-in-out infinite; }
+
+@keyframes pm-perigo-pulse {
+  0%, 100% { border-color: #8b000066; }
+  50%       { border-color: #cc3333; }
+}
+
+.pm-card-header {
+  display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+  background-color: #0f0f0f; border-bottom: 1px solid #1e1e1e;
+}
+
+.pm-card-foto {
+  width: 40px; height: 40px; border-radius: 50%;
+  overflow: hidden; flex-shrink: 0; border: 2px solid #222;
+}
+.pm-card-foto img { width: 100%; height: 100%; object-fit: cover; }
+.pm-card-foto-placeholder {
+  width: 100%; height: 100%; background-color: #1a1a1a;
+  display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
+}
+
+.pm-card-info { flex: 1; min-width: 0; }
+.pm-card-nome { font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; letter-spacing: 1px; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pm-card-jogador { font-family: 'Crimson Pro', serif; font-size: 0.78rem; color: #555; }
+.pm-card-npc-tag { font-family: 'Crimson Pro', serif; font-size: 0.72rem; color: #8b0000; letter-spacing: 1px; }
+
+.pm-card-status-badge { font-family: 'Crimson Pro', serif; font-size: 0.7rem; font-weight: 600; padding: 3px 8px; border-radius: 20px; white-space: nowrap; flex-shrink: 0; }
+.pm-status-ok      { color: #2ecc71; background: #2ecc7111; border: 1px solid #2ecc7144; }
+.pm-status-leve    { color: #f1c40f; background: #f1c40f11; border: 1px solid #f1c40f44; }
+.pm-status-medio   { color: #e67e22; background: #e67e2211; border: 1px solid #e67e2244; }
+.pm-status-grave   { color: #e74c3c; background: #e74c3c11; border: 1px solid #e74c3c44; }
+.pm-status-critico { color: #ff4444; background: #ff444411; border: 1px solid #ff444444; animation: pm-piscar 1s infinite; }
+
+@keyframes pm-piscar { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+/* Machucados */
+.pm-mach-secao { padding: 10px 14px; display: flex; flex-direction: column; gap: 7px; border-bottom: 1px solid #1a1a1a; }
+
+.pm-mach-barra-bg {
+  position: relative; width: 100%; height: 22px;
+  background-color: #1a1a1a; border-radius: 4px; overflow: hidden; border: 1px solid #2a2a2a;
+}
+.pm-mach-barra-fill { height: 100%; border-radius: 4px; transition: width 0.35s ease, background-color 0.35s ease; position: absolute; right: 0; }
+.pm-mach-barra-texto {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  font-family: 'Crimson Pro', serif; font-size: 0.72rem; font-weight: bold;
+  color: white; text-shadow: 0 0 4px #000; pointer-events: none; white-space: nowrap;
+}
+
+.pm-mach-controles { display: flex; gap: 5px; }
+.pm-mach-btn {
+  flex: 1; padding: 5px 0;
+  border-radius: 4px; border: 1px solid #333;
+  background-color: #0a0a0a; color: #888;
+  font-family: 'Crimson Pro', serif; font-size: 0.78rem;
+  cursor: pointer; transition: all 0.15s;
+}
+.pm-mach-btn:hover { border-color: #2ecc71; color: #2ecc71; background-color: #2ecc7111; }
+.pm-mach-btn-dano:hover { border-color: #e74c3c; color: #e74c3c; background-color: #e74c3c11; }
+
+/* Seção interna */
+.pm-secao-titulo { font-family: 'Crimson Pro', serif; font-size: 0.68rem; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: #444; padding: 8px 14px 4px; }
+
+/* Defesas */
+.pm-defesas-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; padding: 0 14px 10px; border-bottom: 1px solid #1a1a1a; }
+.pm-def-item { display: flex; flex-direction: column; align-items: center; gap: 2px; background-color: #0f0f0f; border: 1px solid #1e1e1e; border-radius: 5px; padding: 5px 3px; }
+.pm-def-label { font-family: 'Crimson Pro', serif; font-size: 0.6rem; color: #555; text-align: center; line-height: 1.2; }
+.pm-def-valor { font-family: 'Bebas Neue', sans-serif; font-size: 1rem; color: white; letter-spacing: 1px; }
+.pm-def-passiva { color: #cc3333; }
+
+/* Poderes */
+.pm-poderes-lista { padding: 0 14px 10px; display: flex; flex-direction: column; gap: 4px; border-bottom: 1px solid #1a1a1a; }
+.pm-poder-linha { display: flex; justify-content: space-between; align-items: center; padding: 4px 8px; background-color: #0f0f0f; border: 1px solid #1a1a1a; border-radius: 4px; }
+.pm-poder-nome { font-family: 'Crimson Pro', serif; font-size: 0.82rem; color: #aaa; }
+.pm-poder-cd { font-family: 'Bebas Neue', sans-serif; font-size: 0.85rem; letter-spacing: 1px; color: #cc3333; }
+
+/* Complicações */
+.pm-complicacoes { padding: 0 14px 12px; display: flex; flex-wrap: wrap; gap: 4px; }
+.pm-comp-tag { font-family: 'Crimson Pro', serif; font-size: 0.72rem; color: #888; background-color: #1a1a1a; border: 1px solid #2a2a2a; padding: 2px 8px; border-radius: 3px; cursor: help; }
+
+/* ── RESPONSIVO ─────────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .pm-header { padding: 0 16px; height: auto; flex-direction: column; align-items: flex-start; padding-top: 12px; padding-bottom: 12px; gap: 10px; }
+  .pm-main { padding: 16px; }
+  .pm-grade { grid-template-columns: 1fr; }
+  .pm-defesas-grid { grid-template-columns: repeat(3, 1fr); }
+  .pm-settings-panel { padding: 16px; }
+}
+
+/* ── LAYOUT COM SIDEBAR ──────────────────────────────────────────────── */
+
+.pm-layout {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.pm-main {
+  flex: 1;
+  padding: 32px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+/* ── SIDEBAR ─────────────────────────────────────────────────────────── */
+
+.pm-sidebar {
+  width: 300px;
+  flex-shrink: 0;
+  border-left: 1px solid #1e1e1e;
+  background-color: #0d0d0d;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 64px);
+  position: sticky;
+  top: 64px;
+}
+
+.pm-sidebar-secao-titulo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 0.85rem;
+  letter-spacing: 2px;
+  color: #555;
+  padding: 12px 14px 8px;
+  border-bottom: 1px solid #1a1a1a;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.pm-feed-limpar {
+  font-family: 'Crimson Pro', serif;
+  font-size: 0.72rem;
+  color: #555;
+  background: none;
+  border: 1px solid #333;
+  border-radius: 3px;
+  padding: 1px 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+  letter-spacing: 0;
+}
+.pm-feed-limpar:hover { border-color: #8b0000; color: #cc3333; }
+
+/* Input de dados do mestre */
+.pm-sidebar-input-area {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border-bottom: 1px solid #1a1a1a;
+  flex-shrink: 0;
+}
+
+.pm-sidebar-input {
+  flex: 1;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  color: white;
+  font-family: 'Crimson Pro', serif;
+  font-size: 0.9rem;
+  outline: none;
+}
+.pm-sidebar-input::placeholder { color: #333; font-style: italic; }
+.pm-sidebar-input:focus { background-color: #111; }
+
+.pm-sidebar-input-btn {
+  width: 40px; height: 40px;
+  background-color: #111;
+  border: none;
+  border-left: 1px solid #1e1e1e;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background-color 0.15s;
+  flex-shrink: 0;
+}
+.pm-sidebar-input-btn:hover { background-color: #8b0000; }
+
+/* Feed de rolagens */
+.pm-sidebar-feed {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  scroll-behavior: smooth;
+}
+.pm-sidebar-feed::-webkit-scrollbar { width: 4px; }
+.pm-sidebar-feed::-webkit-scrollbar-thumb { background-color: #2a2a2a; border-radius: 2px; }
+
+.pm-feed-vazio {
+  font-family: 'Crimson Pro', serif;
+  font-size: 0.8rem;
+  color: #333;
+  text-align: center;
+  padding: 20px 10px;
+  font-style: italic;
+}
+
+/* Card de rolagem */
+.pm-feed-roll {
+  background-color: #111;
+  border: 1px solid #1e1e1e;
+  border-radius: 5px;
+  padding: 7px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  animation: feedSlide 0.2s ease;
+  flex-shrink: 0;
+}
+.pm-feed-roll.pm-feed-critico { border-color: #f1c40f44; background-color: #f1c40f08; }
+.pm-feed-roll.pm-feed-fumble  { border-color: #e74c3c44; background-color: #e74c3c08; }
+
+@keyframes feedSlide {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.pm-feed-header {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.pm-feed-nome {
+  font-family: 'Crimson Pro', serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #cc3333;
+  white-space: nowrap;
+}
+
+.pm-feed-label {
+  font-family: 'Crimson Pro', serif;
+  font-size: 0.78rem;
+  color: #aaa;
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pm-feed-hora {
+  font-family: 'Crimson Pro', serif;
+  font-size: 0.68rem;
+  color: #444;
+  white-space: nowrap;
+  margin-left: auto;
+}
+
+.pm-feed-corpo {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.pm-feed-detalhes {
+  font-family: 'Crimson Pro', serif;
+  font-size: 0.75rem;
+  color: #555;
+  flex: 1;
+  min-width: 0;
+  word-break: break-all;
+}
+
+.pm-feed-total {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.2rem;
+  letter-spacing: 1px;
+  flex-shrink: 0;
+}
+
+.pm-feed-badge {
+  font-family: 'Crimson Pro', serif;
+  font-size: 0.62rem;
+  padding: 1px 5px;
+  border-radius: 3px;
+  margin-left: 5px;
+  vertical-align: middle;
+  letter-spacing: 0;
+}
+.pm-feed-badge-critico { background-color: #f1c40f22; color: #f1c40f; border: 1px solid #f1c40f44; }
+.pm-feed-badge-fumble  { background-color: #e74c3c22; color: #e74c3c; border: 1px solid #e74c3c44; }
+
+/* ── ESTILOS EXTRAS NOS CARDS ────────────────────────────────────────── */
+
+.pm-poder-linha-clicavel { cursor: pointer; }
+.pm-poder-linha-clicavel:hover { border-color: #8b0000; background-color: #8b000011; }
+
+.pm-secao-titulo-clicavel {
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.15s;
+}
+.pm-secao-titulo-clicavel:hover { color: #aaa; }
+
+.pm-pericias-npc {
+  padding: 0 14px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-bottom: 1px solid #1a1a1a;
+}
+
+.pm-pericia-npc-linha {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 8px;
+  background-color: #0f0f0f;
+  border: 1px solid #1a1a1a;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.pm-pericia-npc-linha:hover { border-color: #8b000044; background-color: #8b000011; }
+
+.pm-pericia-npc-nome {
+  font-family: 'Crimson Pro', serif;
+  font-size: 0.82rem;
+  color: #aaa;
+  flex: 1;
+}
+
+.pm-pericia-npc-bonus {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 0.85rem;
+  color: #555;
+  letter-spacing: 1px;
+}

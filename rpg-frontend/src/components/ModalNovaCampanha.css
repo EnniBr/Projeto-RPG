@@ -1,0 +1,391 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap');
+
+/* ===== OVERLAY ===== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 100;
+  animation: fadeIn 0.2s ease;
+}
+
+/* ===== CAIXA BASE ===== */
+.modal-caixa {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #111;
+  border: 1px solid #1e1e1e;
+  border-radius: 12px;
+  z-index: 101;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8);
+  animation: slideUp 0.25s ease;
+  overflow-y: auto;
+  max-height: 90vh;
+}
+
+.modal-campanha {
+  width: 560px;
+  padding: 48px 44px;
+}
+
+/* ===== BOTÕES UTILITÁRIOS ===== */
+.modal-fechar {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: 1px solid #333;
+  color: #aaa;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.modal-fechar:hover {
+  background-color: #8b0000;
+  border-color: #8b0000;
+  color: white;
+}
+
+.modal-voltar {
+  background: none;
+  border: none;
+  color: #555;
+  font-family: 'Crimson Pro', serif;
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 20px;
+  transition: color 0.2s;
+  display: block;
+}
+
+.modal-voltar:hover { color: #aaa; }
+
+/* ===== TEXTOS ===== */
+.modal-titulo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2rem;
+  letter-spacing: 2px;
+  color: white;
+  margin: 0 0 6px;
+}
+
+.modal-subtitulo {
+  font-family: 'Crimson Pro', serif;
+  font-size: 1rem;
+  color: #666;
+  margin: 0 0 32px;
+}
+
+/* ===== PASSO ===== */
+.modal-passo {
+  animation: fadeIn 0.2s ease;
+}
+
+/* ===== OPÇÕES GRID (criar/entrar) ===== */
+.opcoes-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.opcao-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 28px 20px;
+  background-color: #0f0f0f;
+  border: 1px solid #222;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.2s, background-color 0.2s;
+  text-align: center;
+}
+
+.opcao-card:hover {
+  border-color: #8b0000;
+  background-color: #8b000011;
+  transform: translateY(-2px);
+}
+
+.opcao-icone { font-size: 2rem; }
+
+.opcao-nome {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.2rem;
+  letter-spacing: 1px;
+  color: white;
+}
+
+.opcao-desc {
+  font-family: 'Crimson Pro', serif;
+  font-size: 0.85rem;
+  color: #666;
+  line-height: 1.4;
+}
+
+/* ===== OPÇÕES LISTA (nível) ===== */
+.opcoes-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.opcao-nivel {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 20px;
+  background-color: #0f0f0f;
+  border: 1px solid #222;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+
+.opcao-nivel:hover {
+  border-color: #8b0000;
+  background-color: #8b000011;
+}
+
+.nivel-icone { font-size: 1.6rem; flex-shrink: 0; }
+
+.opcao-nivel strong {
+  display: block;
+  font-family: 'Crimson Pro', serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 3px;
+}
+
+.opcao-nivel p {
+  font-family: 'Crimson Pro', serif;
+  font-size: 0.85rem;
+  color: #666;
+  margin: 0;
+}
+
+/* ===== CAMPOS ===== */
+.modal-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+
+.modal-campo label {
+  font-family: 'Crimson Pro', serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #777;
+}
+
+.modal-campo input {
+  padding: 12px 14px;
+  border-radius: 6px;
+  border: 1px solid #222;
+  background-color: #0a0a0a;
+  color: white;
+  font-family: 'Crimson Pro', serif;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.modal-campo input:focus {
+  border-color: #8b0000;
+  box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.15);
+}
+
+.modal-campo input::placeholder { color: #444; }
+
+.input-codigo {
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  font-size: 1.2rem !important;
+  text-align: center;
+}
+
+.modal-erro {
+  color: #e74c3c;
+  font-family: 'Crimson Pro', serif;
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+/* ===== BOTÃO PRIMÁRIO ===== */
+.modal-btn-primario {
+  width: 100%;
+  padding: 14px;
+  background-color: #8b0000;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-family: 'Crimson Pro', serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
+  margin-top: 8px;
+}
+
+.modal-btn-primario:hover {
+  background-color: #a00000;
+  box-shadow: 0 4px 20px rgba(139, 0, 0, 0.4);
+}
+
+.modal-btn-primario:active { transform: scale(0.99); }
+
+/* ===== NP SELECTOR ===== */
+.np-selector {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border: 1px solid #222;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.np-selector button {
+  width: 48px;
+  height: 56px;
+  background-color: #0a0a0a;
+  border: none;
+  color: #888;
+  font-size: 1.4rem;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+  flex-shrink: 0;
+}
+
+.np-selector button:hover {
+  background-color: #8b0000;
+  color: white;
+}
+
+.np-valor {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 0;
+  background-color: #0f0f0f;
+}
+
+.np-numero {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2rem;
+  color: white;
+  line-height: 1;
+}
+
+.np-pp {
+  font-family: 'Crimson Pro', serif;
+  font-size: 0.8rem;
+  color: #cc3333;
+}
+
+.np-dica {
+  font-family: 'Crimson Pro', serif;
+  font-size: 0.85rem;
+  color: #666;
+  margin-top: 4px !important;
+  font-style: italic;
+}
+
+/* ===== CRIAR SESSÃO FORM ===== */
+.criar-sessao-form {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===== TUTORIAL ===== */
+.tutorial {
+  animation: fadeIn 0.3s ease;
+}
+
+.tutorial-icone {
+  font-size: 3rem;
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.tutorial-titulo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.8rem;
+  letter-spacing: 2px;
+  color: white;
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.tutorial-topicos {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 28px;
+}
+
+.tutorial-topico {
+  background-color: #0f0f0f;
+  border: 1px solid #1a1a1a;
+  border-left: 3px solid #8b0000;
+  border-radius: 0 6px 6px 0;
+  padding: 14px 16px;
+  animation: slideIn 0.3s ease both;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-10px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.tutorial-topico h4 {
+  font-family: 'Crimson Pro', serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: white;
+  margin: 0 0 6px;
+}
+
+.tutorial-topico p {
+  font-family: 'Crimson Pro', serif;
+  font-size: 0.9rem;
+  color: #888;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ===== ANIMAÇÕES ===== */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translate(-50%, -45%); }
+  to   { opacity: 1; transform: translate(-50%, -50%); }
+}
+
+/* ===== RESPONSIVO ===== */
+@media (max-width: 600px) {
+  .modal-campanha { width: 95vw; padding: 32px 24px; }
+  .opcoes-grid { grid-template-columns: 1fr; }
+}

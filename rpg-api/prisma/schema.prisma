@@ -1,0 +1,126 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id    Int    @id @default(autoincrement())
+  nome  String
+  email String @unique
+  senha String
+  tipo  String
+
+  personagens    Personagem[]
+  sessoes        Sessao[]
+  poderesCriados Poder[]
+}
+
+model Personagem {
+  id   Int     @id @default(autoincrement())
+  nome String
+  foto String?
+  tipo String
+  usuario_id Int
+  machucados  Int    @default(0)
+  owlbear_token_id String?
+  usuario    Usuario @relation(fields: [usuario_id], references: [id])
+  atributo  Atributo?
+  pontos_poder_gastos Int @default(0)
+  poderes   PersonagemPoder[]
+  sessoes   SessaoPersonagem[]
+  pericias  PersonagemPericia[]
+  vantagens PersonagemVantagem[]
+  complicacoes  PersonagemComplicacao[]
+}
+
+model Atributo {
+  id           Int @id @default(autoincrement())
+  forca        Int @default(0)
+  agilidade    Int @default(0)
+  luta         Int @default(0)
+  vigor        Int @default(0)
+  destreza     Int @default(0)
+  intelecto    Int @default(0)
+  consciencia  Int @default(0)
+  presenca     Int @default(0)
+
+  esquiva    Int @default(0)
+  aparar     Int @default(0)
+  fortitude  Int @default(0)
+  vontade    Int @default(0)
+
+  personagem_id Int        @unique
+  personagem    Personagem @relation(fields: [personagem_id], references: [id])
+}
+
+model Poder {
+  id           Int    @id @default(autoincrement())
+  nome         String
+  criador_id Int
+  criador    Usuario @relation(fields: [criador_id], references: [id])
+  efeito_base   String 
+  graduacoes    Int 
+  custo_total   Int 
+  extras        String? 
+  falhas        String?
+  descritores   String?
+  personagens PersonagemPoder[]
+}
+
+model PersonagemPoder {
+  personagem_id Int
+  poder_id      Int
+  personagem Personagem @relation(fields: [personagem_id], references: [id])
+  poder      Poder      @relation(fields: [poder_id], references: [id])
+  @@id([personagem_id, poder_id])
+}
+
+model PersonagemPericia {
+  id            Int        @id @default(autoincrement())
+  graduacoes    Int        @default(0)
+  nome_pericia  String
+  personagem_id Int
+  personagem    Personagem @relation(fields: [personagem_id], references: [id])
+}
+
+model PersonagemVantagem {
+  id              Int        @id @default(autoincrement())
+  nome_vantagem   String
+  graduacoes      Int        @default(1)
+  personagem_id   Int
+  personagem      Personagem @relation(fields: [personagem_id], references: [id])
+}
+
+model Sessao {
+  id   Int      @id @default(autoincrement())
+  nome String
+  data DateTime @default(now())
+  mestre_id Int
+  nivel_poder Int @default(10)
+  jogadores_podem_alterar_machucados Boolean @default(false)
+  codigo String   @unique @default(cuid())
+  mestre    Usuario @relation(fields: [mestre_id], references: [id])
+  personagens SessaoPersonagem[]
+}
+
+model SessaoPersonagem {
+  sessao_id     Int
+  personagem_id Int
+  em_cena       Boolean @default(false)
+  sessao     Sessao     @relation(fields: [sessao_id], references: [id])
+  personagem Personagem @relation(fields: [personagem_id], references: [id])
+  @@id([sessao_id, personagem_id])
+}
+
+model PersonagemComplicacao {
+  id            Int        @id @default(autoincrement())
+  titulo        String
+  descricao     String
+  personagem_id Int
+  personagem    Personagem @relation(fields: [personagem_id], references: [id])
+}
