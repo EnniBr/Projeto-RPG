@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router({ mergeParams: true })
 
-const controller = require('../controllers/personagemvantagemcontroller') 
+const controller = require('../controllers/personagemvantagemController') 
 const { verificarToken, verificarMestre } = require('../middlewares/auth')
 
 router.get('/', verificarToken, controller.listarVantagens)
