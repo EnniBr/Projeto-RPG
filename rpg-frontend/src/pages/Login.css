@@ -142,3 +142,86 @@
   from { opacity: 0; transform: translate(-50%, -45%); }
   to   { opacity: 1; transform: translate(-50%, -50%); }
 }
+
+.modal-abas {
+  display: flex;
+  border-bottom: 1px solid #222;
+  margin-bottom: 20px;
+  gap: 0;
+}
+
+.modal-aba {
+  flex: 1;
+  padding: 10px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: #555;
+  font-family: 'Crimson Pro', serif;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: -1px;
+}
+
+.modal-aba:hover { color: #aaa; }
+
+.modal-aba-ativa {
+  color: white;
+  border-bottom-color: #8b0000;
+}
+
+.modal-tipo-grupo {
+  display: flex;
+  gap: 10px;
+}
+
+.modal-tipo-btn {
+  flex: 1;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #333;
+  background-color: #111;
+  color: #666;
+  font-family: 'Crimson Pro', serif;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.modal-tipo-btn:hover { border-color: #555; color: #aaa; }
+
+.modal-tipo-ativo {
+  border-color: #8b0000;
+  background-color: #8b000022;
+  color: white;
+}
+
+/* Link alternar modo */
+.modal-link-alterar {
+  text-align: center;
+  font-family: 'Crimson Pro', serif;
+  font-size: 0.9rem;
+  color: #555;
+  margin-top: 4px;
+}
+
+.modal-link-alterar span {
+  color: #cc3333;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.modal-link-alterar span:hover { color: #ff4444; }
+
+/* Mensagem de sucesso */
+.modal-sucesso {
+  color: #2ecc71;
+  font-family: 'Crimson Pro', serif;
+  font-size: 0.85rem;
+  padding: 8px 12px;
+  background-color: rgba(46, 204, 113, 0.1);
+  border: 1px solid rgba(46, 204, 113, 0.3);
+  border-radius: 6px;
+  margin: 0;
+}
