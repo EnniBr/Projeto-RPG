@@ -11,6 +11,9 @@ async function criarUsuarios(req, res) {
         })
         res.status(201).json(dados)
     } catch (erro) {
+        if (erro.code === 'P2002') {
+            return res.status(409).json({ mensagem: 'Este email já está cadastrado.' })
+        }
         console.error('Erro ao criar usuário:', erro)
         res.status(500).json({ mensagem: 'Erro interno', erro: erro.message })
     }
