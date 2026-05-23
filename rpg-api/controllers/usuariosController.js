@@ -1,13 +1,17 @@
-const { PrismaClient } = require('../node_modules/@prisma/client')
+const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
+const bcrypt = require('bcrypt')
 
-const bcrypt = require('bcrypt');
-
-async function listarUsuarios(req, res) {
+async function criarUsuarios(req, res) {
     try {
-        const dados = await prisma.usuario.findMany()
-        res.json(dados)
+        const { nome, email, senha, tipo } = req.body
+        const senhaCriptografada = await bcrypt.hash(senha, 10)
+        const dados = await prisma.usuario.create({
+            data: { nome, email, senha: senhaCriptografada, tipo }
+        })
+        res.status(201).json(dados)
     } catch (erro) {
+        console.error('Erro ao criar usuário:', erro)
         res.status(500).json({ mensagem: 'Erro interno', erro: erro.message })
     }
 }
