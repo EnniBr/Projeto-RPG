@@ -13,10 +13,10 @@ async function listarUsuarios(req, res) {
 
 async function criarUsuarios(req, res) {
     try {
-        const { nome, email, senha, tipo } = req.body
+        const { nome, email, senha } = req.body
         const senhaCriptografada = await bcrypt.hash(senha, 10)
         const dados = await prisma.usuario.create({
-            data: { nome, email, senha: senhaCriptografada, tipo }
+            data: { nome, email, senha: senhaCriptografada }
         })
         res.status(201).json(dados)
     } catch (erro) {

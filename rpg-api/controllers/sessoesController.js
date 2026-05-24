@@ -42,13 +42,17 @@ async function criarSessoes(req, res) {
         })
         res.status(201).json(dados)
     } catch (erro) {
-        console.log('ERRO AO CRIAR SESSAO:', erro.message) // ← adiciona isso
+        console.log('ERRO AO CRIAR SESSAO:', erro.message)
         res.status(500).json({ mensagem: 'Erro interno', erro: erro.message })
     }
 }
 
 async function atualizarSessoes(req, res) {
     try {
+        const sessao = await prisma.sessao.findUnique({ where: { id: Number(req.params.id) } })
+        if (!sessao) return res.status(404).json({ mensagem: 'Sessão não encontrada' })
+        if (sessao.mestre_id !== req.usuario.id) return res.status(403).json({ mensagem: 'Apenas o mestre pode editar a sessão' })
+
         const dados = await prisma.sessao.update({ where: { id: Number(req.params.id) }, data: req.body })
         res.status(200).json(dados)
     } catch (erro) {
@@ -58,6 +62,10 @@ async function atualizarSessoes(req, res) {
 
 async function deletarSessoes(req, res) {
     try {
+        const sessao = await prisma.sessao.findUnique({ where: { id: Number(req.params.id) } })
+        if (!sessao) return res.status(404).json({ mensagem: 'Sessão não encontrada' })
+        if (sessao.mestre_id !== req.usuario.id) return res.status(403).json({ mensagem: 'Apenas o mestre pode deletar a sessão' })
+
         const dados = await prisma.sessao.delete({ where: { id: Number(req.params.id) } })
         res.status(200).json(dados)
     } catch (erro) {
@@ -220,4 +228,16 @@ async function atualizarConfiguracoesSessao(req, res) {
     }
 }
 
-module.exports = { listarSessoes, criarSessoes, atualizarSessoes, deletarSessoes, entrarPorCodigo, meuPersonagemNaSessao, personagensDaSessao, atualizarConfiguracoesSessao }
+async function buscarSessao(req, res) {
+    try {
+        const sessao = await prisma.sessao.findUnique({
+            where: { id: Number(req.params.id) }
+        })
+        if (!sessao) return res.status(404).json({ mensagem: 'Sessão não encontrada' })
+        res.json(sessao)
+    } catch (erro) {
+        res.status(500).json({ mensagem: 'Erro interno', erro: erro.message })
+    }
+}
+
+module.exports = { listarSessoes, buscarSessao, criarSessoes, atualizarSessoes, deletarSessoes, entrarPorCodigo, meuPersonagemNaSessao, personagensDaSessao, atualizarConfiguracoesSessao }
