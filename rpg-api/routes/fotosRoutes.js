@@ -2,7 +2,7 @@ const express  = require('express')
 const router   = express.Router()
 const multer   = require('multer')
 const path     = require('path')
-const { PrismaClient } = require('../node_modules/@prisma/client')
+const { PrismaClient } = require('@prisma/client')
 const { verificarToken } = require('../middlewares/auth')
 
 const prisma = new PrismaClient()
