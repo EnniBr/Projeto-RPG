@@ -28,6 +28,7 @@ const authRoutes           = require('./routes/auth')
 const personagemPericiaRoutes  = require('./routes/personagempericias')
 const personagemVantagemRoutes = require('./routes/personagemvantagens')
 const fotosRoutes          = require('./routes/fotosRoutes')
+const exportarRoutes = require('./routes/exportar')
 
 app.use('/usuarios',   usuariosRoutes)
 app.use('/personagens', personagensRoutes)
@@ -38,6 +39,7 @@ app.use('/auth',       authRoutes)
 app.use('/personagens/:personagemId/pericias',  personagemPericiaRoutes)
 app.use('/personagens/:personagemId/vantagens', personagemVantagemRoutes)
 app.use('/personagens', fotosRoutes)
+app.use('/sessoes', exportarRoutes)
 
 // ── Servidor ──
 const PORT = process.env.PORT || 3000
