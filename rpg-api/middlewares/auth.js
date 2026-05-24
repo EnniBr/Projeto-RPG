@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken')
 
 function verificarToken(req, res, next) {
     const authHeader = req.headers['authorization']
-    const token = authHeader && authHeader.split(' ')[1]
+    const token = (authHeader && authHeader.split(' ')[1]) || req.query.token
 
     if (!token) {
         return res.status(401).json({ mensagem: 'Token não fornecido' })
@@ -10,9 +10,7 @@ function verificarToken(req, res, next) {
 
     try {
         const payload = jwt.verify(token, process.env.JWT_SECRET)
-
         req.usuario = payload
-
         next()
     } catch (erro) {
         return res.status(401).json({ mensagem: 'Token inválido ou expirado' })
