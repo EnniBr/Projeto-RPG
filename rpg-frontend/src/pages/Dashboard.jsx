@@ -49,11 +49,9 @@ function Dashboard() {
         </div>
         <div className="dash-header-direita">
           <div className="dash-perfil">
-            <div className="dash-perfil-avatar">
-              {usuario.tipo === 'mestre' ? '👑' : '🦸'}
-            </div>
+            <div className="dash-perfil-avatar">🎲</div>
             <div className="dash-perfil-info">
-              <span className="dash-perfil-tipo">{usuario.tipo || 'Jogador'}</span>
+              <span className="dash-perfil-tipo">Meu Perfil</span>
             </div>
           </div>
           <button className="dash-logout" onClick={logout}>Sair</button>

@@ -60,21 +60,21 @@ function CriacaoPersonagem() {
   const [poderes,      setPoderes]      = useState([])
   const [complicacoes, setComplicacoes] = useState([])
 
-  useEffect(() => {
-    async function init() {
-      try {
-        const [sessoesResp, checkResp] = await Promise.all([
-          api.get('/sessoes'),
-          api.get(`/sessoes/${id}/meu-personagem`),
-        ])
-        if (checkResp.data.personagem) { navigate(`/sessao/${id}/ficha`, { replace: true }); return }
-        const s = sessoesResp.data.find(s => s.id === Number(id))
-        if (s) { setSessao(s); setSessaoAtiva(s) }
-      } catch (e) { console.error('Erro ao inicializar criação:', e) }
-      finally { setVerificando(false) }
-    }
-    init()
-  }, [id])
+useEffect(() => {
+  async function init() {
+    try {
+      const [sessaoResp, checkResp] = await Promise.all([
+        api.get(`/sessoes/${id}`),
+        api.get(`/sessoes/${id}/meu-personagem`),
+      ])
+      if (checkResp.data.personagem) { navigate(`/sessao/${id}/ficha`, { replace: true }); return }
+      setSessao(sessaoResp.data)
+      setSessaoAtiva(sessaoResp.data)
+    } catch (e) { console.error('Erro ao inicializar criação:', e) }
+    finally { setVerificando(false) }
+  }
+  init()
+}, [id])
 
   const np            = sessao?.nivel_poder ?? 10
   const ppTotal       = np * 15

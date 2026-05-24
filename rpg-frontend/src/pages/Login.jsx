@@ -15,7 +15,6 @@ function Login({ fecharModal }) {
   const [emailCad,     setEmailCad]     = useState('')
   const [senhaCad,     setSenhaCad]     = useState('')
   const [confirmarSenha, setConfirmarSenha] = useState('')
-  const [tipo,         setTipo]         = useState('jogador')
 
   const [erro,       setErro]       = useState('')
   const [sucesso,    setSucesso]    = useState('')
@@ -62,10 +61,9 @@ function Login({ fecharModal }) {
     setCarregando(true)
     try {
       await api.post('/usuarios', {
-        nome:  nome.trim(),
-        email: emailCad.trim(),
-        senha: senhaCad,
-        tipo,
+          nome:  nome.trim(),
+          email: emailCad.trim(),
+          senha: senhaCad,
       })
       setSucesso('Conta criada com sucesso! Faça login para continuar.')
       setNome(''); setEmailCad(''); setSenhaCad(''); setConfirmarSenha('')
@@ -164,27 +162,6 @@ function Login({ fecharModal }) {
               <input type="password" placeholder="Repita a senha"
                 value={confirmarSenha} onChange={e => setConfirmarSenha(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleCadastro(e)} />
-            </div>
-
-            {/* Tipo de conta */}
-            <div className="modal-campo">
-              <label>Tipo de conta</label>
-              <div className="modal-tipo-grupo">
-                <button
-                  className={`modal-tipo-btn ${tipo === 'jogador' ? 'modal-tipo-ativo' : ''}`}
-                  onClick={() => setTipo('jogador')}
-                  type="button"
-                >
-                  🦸 Jogador
-                </button>
-                <button
-                  className={`modal-tipo-btn ${tipo === 'mestre' ? 'modal-tipo-ativo' : ''}`}
-                  onClick={() => setTipo('mestre')}
-                  type="button"
-                >
-                  👑 Mestre
-                </button>
-              </div>
             </div>
 
             {erro    && <p className="modal-erro">{erro}</p>}
