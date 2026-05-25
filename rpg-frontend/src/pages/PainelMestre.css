@@ -519,6 +519,11 @@
   cursor: pointer;
   transition: all 0.2s;
   z-index: 2;
+  opacity: 0;
+}
+
+.pm-card-foto:hover .pm-card-foto-upload {
+  opacity: 1;
 }
 
 .pm-card-foto-upload:hover {
