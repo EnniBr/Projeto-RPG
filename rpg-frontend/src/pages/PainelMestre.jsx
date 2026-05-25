@@ -258,6 +258,22 @@ function PainelMestre() {
               </button>
             </div>
           </div>
+
+          <button
+            className="pm-btn-exportar"
+            title="Exportar dados da campanha em CSV"
+            onClick={() => {
+              const token = localStorage.getItem('token')
+              const url   = `${import.meta.env.VITE_API_URL}/sessoes/${id}/exportar?token=${token}`
+              const a     = document.createElement('a')
+              a.href      = url
+              a.download  = `campanha-${id}.csv`
+              a.click()
+            }}
+          >
+            ⬇ Exportar CSV
+          </button>
+
           <button
             className={`pm-btn-settings ${settingsAberto ? 'pm-btn-settings-ativo' : ''}`}
             onClick={() => setSettingsAberto(s => !s)}
@@ -393,6 +409,8 @@ function PainelMestre() {
 function CardPersonagem({ personagem, mostrarJogador, onMachucadosChange, onRoll }) {
   const atr = personagem.atributo
   const [periciasAbertas, setPericiasAbertas] = useState(false)
+  const [fotoUrl,         setFotoUrl]         = useState(personagem.foto)
+  const [uploadando,      setUploadando]      = useState(false)
 
   const defEsquiva     = (atr?.agilidade   ?? 0) + (atr?.esquiva   ?? 0)
   const defAparar      = (atr?.luta        ?? 0) + (atr?.aparar    ?? 0)
@@ -436,22 +454,39 @@ function CardPersonagem({ personagem, mostrarJogador, onMachucadosChange, onRoll
 
   return (
     <div className={`pm-card ${mach >= 3 ? 'pm-card-perigo' : ''}`}>
-
-      {/* Cabeçalho */}
-      <div className="pm-card-header">
-        <div className="pm-card-foto">
-          {personagem.foto
-            ? <img src={personagem.foto} alt={personagem.nome} />
-            : <div className="pm-card-foto-placeholder">{personagem.tipo === 'npc' ? '👾' : '🦸'}</div>
-          }
-        </div>
-        <div className="pm-card-info">
-          <div className="pm-card-nome">{personagem.nome}</div>
-          {mostrarJogador && <div className="pm-card-jogador">{personagem.usuario?.nome ?? '—'}</div>}
-          {personagem.tipo === 'npc' && <div className="pm-card-npc-tag">NPC</div>}
-        </div>
-        <div className={`pm-card-status-badge ${statusInfo.classe}`}>{statusInfo.texto}</div>
-      </div>
+          {/* Cabeçalho */}
+          <div className="pm-card-foto" style={{ position: 'relative' }}>
+      {fotoUrl
+        ? <img src={fotoUrl} alt={personagem.nome} />
+        : <div className="pm-card-foto-placeholder">{personagem.tipo === 'npc' ? '👾' : '🦸'}</div>
+      }
+      {/* Botão de upload — só para NPCs */}
+      {personagem.tipo === 'npc' && (
+        <label className="pm-card-foto-upload" title={uploadando ? 'Enviando...' : 'Alterar foto'}>
+          {uploadando ? '⏳' : '📷'}
+          <input type="file" accept="image/*" style={{ display: 'none' }}
+            disabled={uploadando}
+            onChange={async (e) => {
+              const file = e.target.files[0]
+              if (!file) return
+              setUploadando(true)
+              try {
+                const form = new FormData()
+                form.append('foto', file)
+                const resp = await api.post(`/personagens/${personagem.id}/foto`, form, {
+                  headers: { 'Content-Type': 'multipart/form-data' }
+                })
+                setFotoUrl(resp.data.url)
+              } catch (err) {
+                console.error('Erro ao fazer upload:', err)
+              } finally {
+                setUploadando(false)
+              }
+            }}
+          />
+        </label>
+      )}
+    </div>
 
       {/* Machucados */}
       <div className="pm-mach-secao">
