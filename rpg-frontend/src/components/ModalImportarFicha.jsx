@@ -57,77 +57,58 @@ function ModalImportarFicha({ sessaoId, personagensExistentes = [], ehMestre = f
   // ─── Importar ────────────────────────────────────────────────────────
 
   async function importar() {
-    if (!fichaData) return
-    setEtapa('salvando')
-    setErro('')
-    try {
-      const { atributos, pericias, vantagens, poderes, complicacoes, personagem: pData, imagemBase64 } = fichaData
+  if (!fichaData) return
+  setEtapa('salvando')
+  setErro('')
+  try {
+    const { atributos, pericias, vantagens, poderes, complicacoes, personagem: pData, imagemBase64 } = fichaData
 
-      if (acao === 'temporario') {
-        // Não salva no banco — passa os dados diretamente para o mestre usar
-        onImportado({ temporario: true, fichaData })
-        onFechar()
-        return
-      }
+    if (acao === 'temporario') {
+      onImportado({ temporario: true, fichaData })
+      onFechar()
+      return
+    }
 
-      if (acao === 'substituir' && personagemAlvo) {
-        // Atualiza atributos do personagem existente
-        const pid = Number(personagemAlvo)
+    const resp = await api.post('/personagens/criar-completo', {
+      sessao_id:    Number(sessaoId),
+      nome:         pData.nome,
+      tipo:         pData.tipo ?? 'jogador',
+      atributos:    atributos ?? {},
+      pericias:     pericias  ?? [],
+      vantagens:    vantagens ?? [],
+      poderes:      poderes.map(p => ({
+        nome:        p.nome,
+        efeito_base: p.efeito_base ?? '',
+        graduacoes:  p.graduacoes  ?? 1,
+        custo_total: p.custo_total ?? 1,
+        extras:      p.extras  ?? [],
+        falhas:      p.falhas  ?? [],
+        descritores: p.descritores ?? '',
+      })) ?? [],
+      complicacoes: complicacoes ?? [],
+    })
 
-        // Atualiza nome
-        await api.put(`/personagens/${pid}`, { nome: pData.nome })
-
-        // Atualiza atributos (via endpoint existente)
-        const atrResp = await api.get(`/atributos?personagem_id=${pid}`)
-        if (atrResp.data[0]) {
-          await api.put(`/atributos/${atrResp.data[0].id}`, atributos)
-        }
-
-        // Foto: se veio imagem no PDF e usuário quer usar
-        if (imagemBase64 && usarImagemDoPDF) {
-          const blob = await fetch(imagemBase64).then(r => r.blob())
-          const form = new FormData()
-          form.append('foto', blob, 'foto.jpg')
-          await api.post(`/personagens/${pid}/foto`, form, {
-            headers: { 'Content-Type': 'multipart/form-data' }
-          })
-        }
-
-        onImportado({ substituido: true, personagemId: pid })
-        onFechar()
-        return
-      }
-
-      // acao === 'novo': cria personagem completo
-      const resp = await api.post('/personagens/criar-completo', {
-        sessao_id:    Number(sessaoId),
-        nome:         pData.nome,
-        tipo:         pData.tipo ?? 'jogador',
-        atributos,
-        pericias:     pericias  ?? [],
-        vantagens:    vantagens ?? [],
-        poderes:      poderes   ?? [],
-        complicacoes: complicacoes ?? [],
-      })
-
-      // Foto: se veio imagem no PDF
-      if (imagemBase64 && usarImagemDoPDF) {
+    if (imagemBase64 && usarImagemDoPDF) {
+      try {
         const blob = await fetch(imagemBase64).then(r => r.blob())
         const form = new FormData()
         form.append('foto', blob, 'foto.jpg')
         await api.post(`/personagens/${resp.data.id}/foto`, form, {
           headers: { 'Content-Type': 'multipart/form-data' }
         })
+      } catch (e) {
+        console.warn('Foto não importada:', e)
       }
-
-      onImportado({ novo: true, personagem: resp.data })
-      onFechar()
-    } catch (err) {
-      console.error('Erro ao importar ficha:', err)
-      setErro('Erro ao importar. Verifique o console.')
-      setEtapa('opcoes')
     }
+
+    onImportado({ novo: true, personagem: resp.data })
+    onFechar()
+  } catch (err) {
+    console.error('Erro ao importar ficha:', err)
+    setErro('Erro ao importar. Verifique o console.')
+    setEtapa('opcoes')
   }
+}
 
   // ─── Render ──────────────────────────────────────────────────────────
 
