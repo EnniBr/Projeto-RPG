@@ -419,7 +419,7 @@ function PainelMestre() {
 
 // ─── Card de personagem ────────────────────────────────────────────────────
 
-function CardPersonagem({ personagem, mostrarJogador, onMachucadosChange, onRoll }) {
+function CardPersonagem({ personagem, mostrarJogador, sessaoId, onMachucadosChange, onRoll, onDeletar }) {
   const atr = personagem.atributo
   const [periciasAbertas,   setPericiasAbertas]   = useState(false)
   const [fotoUrl,           setFotoUrl]           = useState(personagem.foto)
