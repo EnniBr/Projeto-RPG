@@ -530,3 +530,71 @@
   background-color: #8b0000;
   border-color: #cc3333;
 }
+
+/* Barra de ações do card */
+.pm-card-acoes {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-bottom: 1px solid #1a1a1a;
+}
+
+.pm-card-acao-btn {
+  background: none;
+  border: 1px solid #222;
+  border-radius: 4px;
+  color: #555;
+  width: 28px; height: 28px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+
+.pm-card-acao-btn:hover { border-color: #444; color: #aaa; }
+.pm-card-acao-deletar:hover { border-color: #8b0000; color: #cc3333; }
+
+.pm-card-confirmar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: #cc3333;
+}
+
+.pm-card-confirmar-sim {
+  padding: 2px 8px;
+  background-color: #8b0000;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 0.75rem;
+}
+
+.pm-card-confirmar-nao {
+  padding: 2px 8px;
+  background: none;
+  color: #666;
+  border: 1px solid #333;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 0.75rem;
+}
+
+.pm-card-add-barra {
+  width: 100%;
+  padding: 8px;
+  background: none;
+  border: 1px dashed #222;
+  color: #444;
+  font-size: 0.8rem;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s;
+  margin: 4px 0;
+}
+
+.pm-card-add-barra:hover { border-color: #555; color: #888; }

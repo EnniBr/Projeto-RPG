@@ -224,6 +224,15 @@ function PainelMestre() {
     api.get(`/sessoes/${id}/personagens`).then(resp => setPersonagens(resp.data.personagens))
   }
 
+  async function deletarPersonagem(id) {
+    try {
+      await api.delete(`/personagens/${id}`)
+      setPersonagens(prev => prev.filter(p => p.id !== id))
+    } catch (e) {
+      console.error('Erro ao deletar personagem:', e)
+    }
+  }
+
   // ─── Loading ──────────────────────────────────────────────────────────────
 
   if (carregando) {
@@ -323,8 +332,10 @@ function PainelMestre() {
               <div className="pm-grade">
                 {jogadores.map(p => (
                   <CardPersonagem key={p.id} personagem={p} mostrarJogador
+                    sessaoId={id}
                     onMachucadosChange={atualizarMachucados}
                     onRoll={masterRolar}
+                    onDeletar={deletarPersonagem}
                   />
                 ))}
               </div>
@@ -346,8 +357,10 @@ function PainelMestre() {
               <div className="pm-grade">
                 {npcs.map(p => (
                   <CardPersonagem key={p.id} personagem={p} mostrarJogador={false}
+                    sessaoId={id}
                     onMachucadosChange={atualizarMachucados}
                     onRoll={masterRolar}
+                    onDeletar={deletarPersonagem}
                   />
                 ))}
               </div>
@@ -408,10 +421,14 @@ function PainelMestre() {
 
 function CardPersonagem({ personagem, mostrarJogador, onMachucadosChange, onRoll }) {
   const atr = personagem.atributo
-  const [periciasAbertas, setPericiasAbertas] = useState(false)
-  const [fotoUrl,         setFotoUrl]         = useState(personagem.foto)
-  const [uploadando,      setUploadando]      = useState(false)
-
+  const [periciasAbertas,   setPericiasAbertas]   = useState(false)
+  const [fotoUrl,           setFotoUrl]           = useState(personagem.foto)
+  const [uploadando,        setUploadando]        = useState(false)
+  const [confirmarDeletar,  setConfirmarDeletar]  = useState(false) 
+  const [temBarra,          setTemBarra]          = useState(     
+    personagem.tipo !== 'npc' || (personagem.machucados ?? 0) > 0
+  )
+  
   const defEsquiva     = (atr?.agilidade   ?? 0) + (atr?.esquiva   ?? 0)
   const defAparar      = (atr?.luta        ?? 0) + (atr?.aparar    ?? 0)
   const defFortitude   = (atr?.vigor       ?? 0) + (atr?.fortitude ?? 0)
@@ -454,13 +471,38 @@ function CardPersonagem({ personagem, mostrarJogador, onMachucadosChange, onRoll
 
   return (
     <div className={`pm-card ${mach >= 3 ? 'pm-card-perigo' : ''}`}>
-          {/* Cabeçalho */}
+          <div className="pm-card-acoes">
+            <button
+              className="pm-card-acao-btn"
+              title="Abrir ficha completa"
+              onClick={() => window.open(`/sessao/${sessaoId}/ficha?personagemId=${personagem.id}`, '_blank')}
+            >
+              📋
+            </button>
+
+            {!confirmarDeletar ? (
+              <button
+                className="pm-card-acao-btn pm-card-acao-deletar"
+                title="Remover personagem"
+                onClick={() => setConfirmarDeletar(true)}
+              >
+                🗑
+              </button>
+            ) : (
+              <div className="pm-card-confirmar">
+                <span>Remover?</span>
+                <button className="pm-card-confirmar-sim" onClick={() => onDeletar(personagem.id)}>Sim</button>
+                <button className="pm-card-confirmar-nao" onClick={() => setConfirmarDeletar(false)}>Não</button>
+              </div>
+            )}
+          </div>
+
           <div className="pm-card-foto" style={{ position: 'relative' }}>
       {fotoUrl
         ? <img src={fotoUrl} alt={personagem.nome} />
         : <div className="pm-card-foto-placeholder">{personagem.tipo === 'npc' ? '👾' : '🦸'}</div>
       }
-      {/* Botão de upload — só para NPCs */}
+
       {personagem.tipo === 'npc' && (
         <label className="pm-card-foto-upload" title={uploadando ? 'Enviando...' : 'Alterar foto'}>
           {uploadando ? '⏳' : '📷'}
@@ -486,22 +528,30 @@ function CardPersonagem({ personagem, mostrarJogador, onMachucadosChange, onRoll
           />
         </label>
       )}
-    </div>
+          </div>
 
       {/* Machucados */}
-      <div className="pm-mach-secao">
-        <div className="pm-mach-barra-bg">
-          <div className="pm-mach-barra-fill"
-            style={{ width: `${pct}%`, backgroundColor: CORES_MACH[mach] }} />
-          <span className="pm-mach-barra-texto">{mach} / {MAX_MACH} machucados</span>
+      {temBarra ? (
+        <div className="pm-mach-secao">
+          <div className="pm-mach-barra-bg">
+            <div className="pm-mach-barra-fill"
+              style={{ width: `${pct}%`, backgroundColor: CORES_MACH[mach] }} />
+            <span className="pm-mach-barra-texto">{mach} / {MAX_MACH} machucados</span>
+          </div>
+          <div className="pm-mach-controles">
+            <button className="pm-mach-btn" onClick={() => alterar(-4)} title="Curar tudo">«</button>
+            <button className="pm-mach-btn" onClick={() => alterar(-1)}>− Curar</button>
+            <button className="pm-mach-btn pm-mach-btn-dano" onClick={() => alterar(+1)}>+ Dano</button>
+            <button className="pm-mach-btn pm-mach-btn-dano" onClick={() => alterar(+4)} title="Incapacitar">»</button>
+          </div>
         </div>
-        <div className="pm-mach-controles">
-          <button className="pm-mach-btn" onClick={() => alterar(-4)} title="Curar tudo">«</button>
-          <button className="pm-mach-btn" onClick={() => alterar(-1)}>− Curar</button>
-          <button className="pm-mach-btn pm-mach-btn-dano" onClick={() => alterar(+1)}>+ Dano</button>
-          <button className="pm-mach-btn pm-mach-btn-dano" onClick={() => alterar(+4)} title="Incapacitar">»</button>
-        </div>
-      </div>
+      ) : (
+      personagem.tipo === 'npc' && (
+        <button className="pm-card-add-barra" onClick={() => setTemBarra(true)}>
+          + Adicionar barra de vida
+        </button>
+      )
+    )}
 
       {/* Defesas */}
       <div className="pm-secao-titulo">Defesas</div>
