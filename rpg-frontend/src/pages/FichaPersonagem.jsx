@@ -7,6 +7,8 @@ import dadoIcon from '../assets/dice-d20-svgrepo-com.svg'
 import regras from '../data/regras_mm3e.json'
 import './FichaPersonagem.css'
 import { jwtDecode } from 'jwt-decode'
+import ModalExportarFicha from '../components/ModalExportarFicha'
+import ModalImportarFicha from '../components/ModalImportarFicha'
 
 // ─── Constantes ────────────────────────────────────────────────────────────
 
@@ -119,6 +121,8 @@ function FichaPersonagem() {
   const [rolls,          setRolls]          = useState([])
   const [diceInput,      setDiceInput]      = useState('')
   const [jogsPodemAlterar, setJogsPodemAlterar] = useState(false)
+  const [modalExportar, setModalExportar] = useState(false)
+  const [modalImportar, setModalImportar] = useState(false)
 
   const token     = localStorage.getItem('token')
   const meuUserId = token ? jwtDecode(token).id : null
@@ -321,7 +325,23 @@ function FichaPersonagem() {
           <p><strong>Sessão:</strong> {sessao?.nome ?? '—'}</p>
           <p><strong>NP:</strong> {np}</p>
         </div>
-        <div className="topo-direita"><h1>NP {np}</h1></div>
+        <div className="topo-direita">
+          <h1>NP {np}</h1>
+          <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+            <button
+              onClick={() => setModalExportar(true)}
+              style={{ padding: '4px 12px', backgroundColor: '#111', border: '1px solid #333', borderRadius: 4, color: '#aaa', fontSize: '0.8rem', cursor: 'pointer' }}
+            >
+              ⬇ Exportar PDF
+            </button>
+            <button
+              onClick={() => setModalImportar(true)}
+              style={{ padding: '4px 12px', backgroundColor: '#111', border: '1px solid #333', borderRadius: 4, color: '#aaa', fontSize: '0.8rem', cursor: 'pointer' }}
+            >
+              ⬆ Importar
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* ══════════════════════════════
@@ -491,6 +511,29 @@ function FichaPersonagem() {
           </button>
         ))}
       </nav>
+
+    {modalExportar && personagem && (
+        <ModalExportarFicha
+          personagem={personagem}
+          atributos={atributos}
+          pericias={pericias}
+          vantagens={vantagens}
+          poderes={poderes}
+          complicacoes={complicacoes}
+          sessao={sessao}
+          onFechar={() => setModalExportar(false)}
+        />
+      )}
+
+      {modalImportar && (
+        <ModalImportarFicha
+          sessaoId={id}
+          personagensExistentes={personagem ? [personagem] : []}
+          ehMestre={false}
+          onFechar={() => setModalImportar(false)}
+          onImportado={() => window.location.reload()}
+        />
+      )}
 
     </div>
   )
