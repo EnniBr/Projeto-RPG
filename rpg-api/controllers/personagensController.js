@@ -30,12 +30,28 @@ async function atualizarPersonagens(req, res) {
 }
 
 async function deletarPersonagens(req, res) {
-    try {
-        const dados = await prisma.personagem.delete({where: { id: Number(req.params.id) }})
-        res.status(200).json(dados)
-    } catch (erro) {
-        res.status(500).json({ mensagem: 'Erro interno', erro: erro.message })
+  try {
+    const id = Number(req.params.id)
+
+    const vinculo = await prisma.sessaoPersonagem.findFirst({
+      where: { personagem_id: id },
+      include: { sessao: true }
+    })
+
+    if (!vinculo) {
+      return res.status(404).json({ mensagem: 'Personagem não encontrado em nenhuma sessão' })
     }
+
+    if (vinculo.sessao.mestre_id !== req.usuario.id) {
+      return res.status(403).json({ mensagem: 'Apenas o mestre pode deletar personagens' })
+    }
+
+    const dados = await prisma.personagem.delete({ where: { id } })
+    res.status(200).json(dados)
+  } catch (erro) {
+    console.error('Erro ao deletar personagem:', erro)
+    res.status(500).json({ mensagem: 'Erro interno', erro: erro.message })
+  }
 }
 
 async function criarPersonagemCompleto(req, res) {
