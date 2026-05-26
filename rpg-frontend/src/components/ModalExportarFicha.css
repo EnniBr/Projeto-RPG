@@ -1,0 +1,226 @@
+/* ── Overlay e modal ─────────────────────────────────────────── */
+.ef-overlay {
+  position: fixed; inset: 0;
+  background-color: rgba(0,0,0,0.75);
+  backdrop-filter: blur(6px);
+  z-index: 200;
+}
+
+.ef-modal {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 201;
+  background-color: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  width: 680px;
+  max-width: 96vw;
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 25px 60px rgba(0,0,0,0.7);
+  overflow: hidden;
+}
+
+/* ── Header ──────────────────────────────────────────────────── */
+.ef-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 24px 28px 16px;
+  border-bottom: 1px solid #222;
+  flex-shrink: 0;
+}
+
+.ef-titulo {
+  color: white;
+  font-size: 1.4rem;
+  font-weight: bold;
+  margin: 0;
+}
+
+.ef-sub {
+  color: #666;
+  font-size: 0.85rem;
+  margin: 4px 0 0;
+  font-family: 'Crimson Pro', serif;
+}
+
+.ef-fechar {
+  background: none;
+  border: 1px solid #333;
+  color: #aaa;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 0.85rem;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.ef-fechar:hover { background-color: #8b0000; border-color: #8b0000; color: white; }
+
+/* ── Corpo ───────────────────────────────────────────────────── */
+.ef-corpo {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ef-corpo-preview {
+  align-items: center;
+}
+
+.ef-instrucao {
+  color: #aaa;
+  font-family: 'Crimson Pro', serif;
+  font-size: 0.95rem;
+  text-align: center;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.ef-instrucao span { color: #666; font-size: 0.85rem; }
+
+/* ── Etapa 1: escolha de imagem ──────────────────────────────── */
+.ef-imagem-escolha {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 32px 0;
+}
+
+.ef-btn-upload {
+  padding: 12px 28px;
+  background-color: #8b0000;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+.ef-btn-upload:hover { background-color: #a00000; }
+
+.ef-btn-pular {
+  background: none;
+  border: none;
+  color: #555;
+  font-family: 'Crimson Pro', serif;
+  font-size: 0.9rem;
+  cursor: pointer;
+  text-decoration: underline;
+  transition: color 0.2s;
+}
+
+.ef-btn-pular:hover { color: #aaa; }
+
+/* ── Cropper ─────────────────────────────────────────────────── */
+.ef-crop-area {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ef-cropper-wrapper {
+  position: relative;
+  width: 100%;
+  height: 340px;
+  background-color: #111;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.ef-crop-controles {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ef-zoom-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #888;
+  font-size: 0.85rem;
+}
+
+.ef-zoom-label input[type="range"] {
+  flex: 1;
+  accent-color: #8b0000;
+}
+
+.ef-crop-acoes {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+/* ── Preview ─────────────────────────────────────────────────── */
+.ef-preview-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.ef-preview-escala {
+  transform: scale(0.48);
+  transform-origin: top center;
+  width: 794px;
+  height: 1123px;
+  margin-bottom: calc(-1123px * 0.52); /* colapsa o espaço extra */
+}
+
+/* ── Ações ───────────────────────────────────────────────────── */
+.ef-acoes {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding-top: 8px;
+}
+
+.ef-btn-primario {
+  padding: 12px 28px;
+  background-color: #8b0000;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+.ef-btn-primario:hover:not(:disabled) { background-color: #a00000; }
+.ef-btn-primario:disabled { background-color: #444; cursor: not-allowed; }
+
+.ef-btn-secundario {
+  padding: 12px 20px;
+  background-color: transparent;
+  color: #aaa;
+  border: 1px solid #333;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.ef-btn-secundario:hover { border-color: #555; color: white; }
+
+/* ── Erro ────────────────────────────────────────────────────── */
+.ef-erro {
+  color: #e74c3c;
+  font-size: 0.85rem;
+  text-align: center;
+  margin: 0;
+}
