@@ -380,10 +380,11 @@ const FichaTemplate = forwardRef(function FichaTemplate({
       fontSize:      42,
       fontWeight:    900,
       color:         'white',
-      letterSpacing: -1,
+      letterSpacing: 4,   
       lineHeight:    1,
       textTransform: 'uppercase',
       margin:        0,
+      textShadow:    '0 1px 3px rgba(0,0,0,0.8)',
     },
     headerNP: {
       fontFamily:    FONT_TITULO,
@@ -454,6 +455,7 @@ const FichaTemplate = forwardRef(function FichaTemplate({
       padding:         '5px 0',
       margin:          0,
       lineHeight:      1,
+      WebkitFontSmoothing: 'antialiased',
     },
 
     // ── Seção genérica ──
@@ -485,6 +487,7 @@ const FichaTemplate = forwardRef(function FichaTemplate({
       lineHeight:  1.4,
       color:       '#dddddd',
       margin:      '1px 0',
+      WebkitFontSmoothing: 'antialiased',
     },
     itemNome: {
       fontFamily:  FONT_NORMAL,
@@ -506,7 +509,7 @@ const FichaTemplate = forwardRef(function FichaTemplate({
     // ── Foto ──
     fotoBox: {
       width:           '100%',
-      height:          220,
+      aspectRatio:     '3 / 4',   // ← era height: 220 fixo
       backgroundColor: '#111111',
       border:          `1px solid #2a2a2a`,
       borderRadius:    4,
