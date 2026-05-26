@@ -39,15 +39,24 @@ async function deletarPersonagens(req, res) {
     })
 
     if (!vinculo) {
-      return res.status(404).json({ mensagem: 'Personagem não encontrado em nenhuma sessão' })
+      return res.status(404).json({ mensagem: 'Personagem não encontrado' })
     }
 
     if (vinculo.sessao.mestre_id !== req.usuario.id) {
       return res.status(403).json({ mensagem: 'Apenas o mestre pode deletar personagens' })
     }
 
-    const dados = await prisma.personagem.delete({ where: { id } })
-    res.status(200).json(dados)
+    await prisma.$transaction(async (tx) => {
+      await tx.sessaoPersonagem.deleteMany({ where: { personagem_id: id } })
+      await tx.personagemPoder.deleteMany({ where: { personagem_id: id } })
+      await tx.atributo.deleteMany({ where: { personagem_id: id } })
+      await tx.personagemPericia.deleteMany({ where: { personagem_id: id } })
+      await tx.personagemVantagem.deleteMany({ where: { personagem_id: id } })
+      await tx.personagemComplicacao.deleteMany({ where: { personagem_id: id } })
+      await tx.personagem.delete({ where: { id } })
+    })
+
+    res.status(200).json({ mensagem: 'Personagem deletado com sucesso' })
   } catch (erro) {
     console.error('Erro ao deletar personagem:', erro)
     res.status(500).json({ mensagem: 'Erro interno', erro: erro.message })
