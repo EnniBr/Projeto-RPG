@@ -95,7 +95,7 @@ function ModalExportarFicha({ personagem, atributos, pericias, vantagens, podere
   // ─── Gerar PDF ──────────────────────────────────────────────────────────
 
   async function gerarPDF() {
-    if (!fichaRef.current) return
+    if (!offscreenRef.current) return
     setGerando(true)
     setErro('')
     try {
