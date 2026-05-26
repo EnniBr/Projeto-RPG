@@ -56,6 +56,13 @@ function ModalImportarFicha({ sessaoId, personagensExistentes = [], ehMestre = f
 
   // ─── Importar ────────────────────────────────────────────────────────
 
+  function limparAtributos(atributos) {
+    const campos = ['forca','vigor','agilidade','destreza','luta','intelecto','consciencia','presenca','esquiva','aparar','fortitude','vontade']
+    const limpo = {}
+    campos.forEach(c => { limpo[c] = atributos?.[c] ?? 0 })
+    return limpo
+  }
+
   async function importar() {
   if (!fichaData) return
   setEtapa('salvando')
@@ -73,7 +80,7 @@ function ModalImportarFicha({ sessaoId, personagensExistentes = [], ehMestre = f
       sessao_id:    Number(sessaoId),
       nome:         pData.nome,
       tipo:         pData.tipo ?? 'jogador',
-      atributos:    atributos ?? {},
+      atributos: limparAtributos(atributos),
       pericias:     pericias  ?? [],
       vantagens:    vantagens ?? [],
       poderes:      poderes.map(p => ({

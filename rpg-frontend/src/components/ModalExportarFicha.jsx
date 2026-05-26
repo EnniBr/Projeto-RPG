@@ -50,7 +50,8 @@ function embutirDados(pdfBytes, dados) {
 // ─── Componente ────────────────────────────────────────────────────────────
 
 function ModalExportarFicha({ personagem, atributos, pericias, vantagens, poderes, complicacoes, sessao, onFechar }) {
-  const fichaRef = useRef(null)
+  const fichaRef        = useRef(null)
+  const offscreenRef    = useRef(null)
 
   // Crop states
   const [imageSrc,           setImageSrc]           = useState(null)
@@ -99,11 +100,11 @@ function ModalExportarFicha({ personagem, atributos, pericias, vantagens, podere
     setErro('')
     try {
       // Captura a ficha como imagem
-      const canvas = await html2canvas(fichaRef.current, {
+      const canvas = await html2canvas(offscreenRef.current, {
         scale: 2,
         useCORS: true,
         allowTaint: true,
-        backgroundColor: '#0a0a0a',
+        backgroundColor: '#0d0d0d',
       })
 
       const imgData = canvas.toDataURL('image/jpeg', 0.95)
@@ -255,7 +256,6 @@ function ModalExportarFicha({ personagem, atributos, pericias, vantagens, podere
             <div className="ef-preview-wrapper">
               <div className="ef-preview-escala">
                 <FichaTemplate
-                  ref={fichaRef}
                   personagem={personagem}
                   atributos={atributos}
                   pericias={pericias}
@@ -270,6 +270,25 @@ function ModalExportarFicha({ personagem, atributos, pericias, vantagens, podere
                   poderesOfensivos={poderesOfensivos}
                 />
               </div>
+            </div>
+
+            {/* Template off-screen */}
+            <div style={{ position: 'fixed', left: '-9999px', top: 0, zIndex: -1 }}>
+              <FichaTemplate
+                ref={offscreenRef}
+                personagem={personagem}
+                atributos={atributos}
+                pericias={pericias}
+                vantagens={vantagens}
+                poderes={poderes}
+                complicacoes={complicacoes}
+                sessao={sessao}
+                imagemFundo={imagemFinal}
+                np={np}
+                defTotal={defTotal}
+                resistenciaTotal={resistenciaTotal}
+                poderesOfensivos={poderesOfensivos}
+              />
             </div>
 
             {erro && <p className="ef-erro">{erro}</p>}
