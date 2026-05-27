@@ -209,12 +209,14 @@ useEffect(() => {
         <div className="cria-pp-sessao">
           <span className="cria-pp-sessao-nome">{sessao?.nome ?? `Sessão ${id}`}</span>
           <span className="cria-pp-np">NP {np}</span>
-          <button
-            onClick={() => setModalImportar(true)}
-            style={{ padding: '6px 14px', backgroundColor: '#111', border: '1px solid #333', borderRadius: 6, color: '#aaa', fontSize: '0.82rem', cursor: 'pointer' }}
-          >
-            ⬆ Importar Ficha
-          </button>
+          <label style={{
+            padding: '6px 14px', backgroundColor: '#111',
+            border: '1px solid #333', borderRadius: 6,
+            color: '#aaa', fontSize: '0.82rem', cursor: 'pointer'
+          }}>
+            ⬆ Importar PDF
+            <input type="file" accept=".pdf" style={{ display: 'none' }} onChange={importarDoPDF} />
+          </label>
         </div>
         <div className="cria-pp-barra-wrapper">
           <div className="cria-pp-barra-bg">
