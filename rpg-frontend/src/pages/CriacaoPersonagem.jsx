@@ -59,7 +59,6 @@ function CriacaoPersonagem() {
   const [vantagens,    setVantagens]    = useState([])
   const [poderes,      setPoderes]      = useState([])
   const [complicacoes, setComplicacoes] = useState([])
-  const [modalImportar, setModalImportar] = useState(false)
 
 useEffect(() => {
   async function init() {
@@ -161,6 +160,43 @@ useEffect(() => {
       console.error(e)
       setErro('Erro ao salvar personagem. Verifique o console.')
     } finally { setSalvando(false) }
+  }
+
+  async function importarDoPDF(e) {
+    const file = e.target.files[0]
+    if (!file) return
+    try {
+      const buffer = await file.arrayBuffer()
+      const text   = new TextDecoder('latin1').decode(new Uint8Array(buffer))
+      const start  = text.lastIndexOf('%%FICHA_DATA:')
+      if (start === -1) { alert('PDF sem dados de ficha do sistema.'); return }
+      const dataStart = start + '%%FICHA_DATA:'.length
+      const end       = text.indexOf('%%END_FICHA_DATA', dataStart)
+      const dados     = JSON.parse(decodeURIComponent(escape(atob(text.slice(dataStart, end).trim()))))
+      setNomeHeroi(dados.personagem?.nome ?? '')
+      setHabilidades({
+        forca: dados.atributos?.forca ?? 0, vigor: dados.atributos?.vigor ?? 0,
+        agilidade: dados.atributos?.agilidade ?? 0, destreza: dados.atributos?.destreza ?? 0,
+        luta: dados.atributos?.luta ?? 0, intelecto: dados.atributos?.intelecto ?? 0,
+        consciencia: dados.atributos?.consciencia ?? 0, presenca: dados.atributos?.presenca ?? 0,
+      })
+      setDefesas({
+        esquiva: dados.atributos?.esquiva ?? 0, aparar: dados.atributos?.aparar ?? 0,
+        fortitude: dados.atributos?.fortitude ?? 0, vontade: dados.atributos?.vontade ?? 0,
+      })
+      setPericias(dados.pericias?.map(p => ({ nome_pericia: p.nome_pericia, graduacoes: p.graduacoes })) ?? [])
+      setVantagens(dados.vantagens?.map(v => v.nome_vantagem) ?? [])
+      setPoderes(dados.poderes?.map(p => ({
+        uid: Date.now() + Math.random(), nome: p.nome ?? '',
+        efeito_base: p.efeito_base ?? '',
+        custo_base: p.custo_total ? Math.round(p.custo_total / (p.graduacoes || 1)) : 1,
+        graduacoes: p.graduacoes ?? 1, extras: p.extras ?? [],
+        falhas: p.falhas ?? [], custo_total: p.custo_total ?? 1,
+      })) ?? [])
+      setComplicacoes(dados.complicacoes?.map(c => ({ titulo: c.titulo ?? '', descricao: c.descricao ?? '' })) ?? [])
+    } catch (err) {
+      alert('Erro ao ler ficha: ' + err.message)
+    }
   }
 
   if (verificando) return <div className="cria-loading"><div className="cria-loading-texto">Carregando sessão...</div></div>
@@ -490,53 +526,6 @@ function PainelPoder({ poder, np, ppRestante, onRemove, onUpdate, onSetEfeito, o
   const [expandido, setExpandido] = useState(true)
   const [abaAtiva,  setAbaAtiva]  = useState(null)
   const efeitoSelecionado = EFEITOS_LISTA.find(e => e.nome === poder.efeito_base)
-
-async function importarDoPDF(e) {
-  const file = e.target.files[0]
-  if (!file) return
-  try {
-    const buffer = await file.arrayBuffer()
-    const text   = new TextDecoder('latin1').decode(new Uint8Array(buffer))
-    const start  = text.lastIndexOf('%%FICHA_DATA:')
-    if (start === -1) { alert('PDF sem dados de ficha do sistema.'); return }
-    const dataStart = start + '%%FICHA_DATA:'.length
-    const end       = text.indexOf('%%END_FICHA_DATA', dataStart)
-    const dados     = JSON.parse(decodeURIComponent(escape(atob(text.slice(dataStart, end).trim()))))
-
-    setNomeHeroi(dados.personagem?.nome ?? '')
-    setHabilidades({
-      forca:       dados.atributos?.forca       ?? 0,
-      vigor:       dados.atributos?.vigor       ?? 0,
-      agilidade:   dados.atributos?.agilidade   ?? 0,
-      destreza:    dados.atributos?.destreza    ?? 0,
-      luta:        dados.atributos?.luta        ?? 0,
-      intelecto:   dados.atributos?.intelecto   ?? 0,
-      consciencia: dados.atributos?.consciencia ?? 0,
-      presenca:    dados.atributos?.presenca    ?? 0,
-    })
-    setDefesas({
-      esquiva:   dados.atributos?.esquiva   ?? 0,
-      aparar:    dados.atributos?.aparar    ?? 0,
-      fortitude: dados.atributos?.fortitude ?? 0,
-      vontade:   dados.atributos?.vontade   ?? 0,
-    })
-    setPericias(dados.pericias?.map(p => ({ nome_pericia: p.nome_pericia, graduacoes: p.graduacoes })) ?? [])
-    setVantagens(dados.vantagens?.map(v => v.nome_vantagem) ?? [])
-    setPoderes(dados.poderes?.map(p => ({
-      uid: Date.now() + Math.random(),
-      nome:        p.nome        ?? '',
-      efeito_base: p.efeito_base ?? '',
-      custo_base:  p.custo_total ? Math.round(p.custo_total / (p.graduacoes || 1)) : 1,
-      graduacoes:  p.graduacoes  ?? 1,
-      extras:      p.extras      ?? [],
-      falhas:      p.falhas      ?? [],
-      custo_total: p.custo_total ?? 1,
-    })) ?? [])
-    setComplicacoes(dados.complicacoes?.map(c => ({ titulo: c.titulo ?? '', descricao: c.descricao ?? '' })) ?? [])
-  } catch (err) {
-    alert('Erro ao ler ficha: ' + err.message)
-  }
-}
 
   return (
     <div className="poder-painel">
