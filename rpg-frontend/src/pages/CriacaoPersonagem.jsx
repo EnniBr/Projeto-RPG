@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from 'react'
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useSessao } from '../contexts/SessaoContext'
@@ -60,6 +61,7 @@ function CriacaoPersonagem() {
   const [poderes,      setPoderes]      = useState([])
   const [complicacoes, setComplicacoes] = useState([])
   const [modalImportar, setModalImportar] = useState([])
+  const importRef = useRef(null)
 
 useEffect(() => {
   async function init() {
@@ -186,7 +188,7 @@ useEffect(() => {
         fortitude: dados.atributos?.fortitude ?? 0, vontade: dados.atributos?.vontade ?? 0,
       })
       setPericias(dados.pericias?.map(p => ({ nome_pericia: p.nome_pericia, graduacoes: p.graduacoes })) ?? [])
-      setVantagens(dados.vantagens?.map(v => v.nome_vantagem) ?? [])
+      setVantagens(dados.vantagens?.map(v => ({ nome_vantagem: v.nome_vantagem, graduacoes: v.graduacoes ?? 1, graduada: false })) ?? [])
       setPoderes(dados.poderes?.map(p => ({
         uid: Date.now() + Math.random(), nome: p.nome ?? '',
         efeito_base: p.efeito_base ?? '',
@@ -209,14 +211,19 @@ useEffect(() => {
         <div className="cria-pp-sessao">
           <span className="cria-pp-sessao-nome">{sessao?.nome ?? `Sessão ${id}`}</span>
           <span className="cria-pp-np">NP {np}</span>
-          <label style={{
-            padding: '6px 14px', backgroundColor: '#111',
-            border: '1px solid #333', borderRadius: 6,
-            color: '#aaa', fontSize: '0.82rem', cursor: 'pointer'
-          }}>
+          <button
+            onClick={() => importRef.current?.click()}
+            style={{ padding: '6px 14px', backgroundColor: '#111', border: '1px solid #333', borderRadius: 6, color: '#aaa', fontSize: '0.82rem', cursor: 'pointer' }}
+          >
             ⬆ Importar PDF
-            <input type="file" accept=".pdf" style={{ display: 'none' }} onChange={importarDoPDF} />
-          </label>
+          </button>
+          <input
+            ref={importRef}
+            type="file"
+            accept=".pdf"
+            style={{ display: 'none' }}
+            onChange={importarDoPDF}
+          />
         </div>
         <div className="cria-pp-barra-wrapper">
           <div className="cria-pp-barra-bg">
@@ -246,14 +253,6 @@ useEffect(() => {
         {/* 01 — INFORMAÇÕES BÁSICAS */}
         <section className="cria-secao">
           <div className="cria-secao-titulo">
-            <label style={{
-              padding: '6px 14px', backgroundColor: '#111',
-              border: '1px solid #333', borderRadius: 6,
-              color: '#aaa', fontSize: '0.82rem', cursor: 'pointer'
-            }}>
-              ⬆ Importar PDF
-              <input type="file" accept=".pdf" style={{ display: 'none' }} onChange={importarDoPDF} />
-            </label>
             <span className="cria-secao-numero">01</span>
             <h2>Informações Básicas</h2>
           </div>
