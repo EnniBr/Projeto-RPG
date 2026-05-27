@@ -9,6 +9,7 @@ import './FichaPersonagem.css'
 import { jwtDecode } from 'jwt-decode'
 import ModalExportarFicha from '../components/ModalExportarFicha'
 import ModalImportarFicha from '../components/ModalImportarFicha'
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 
 // ─── Constantes ────────────────────────────────────────────────────────────
 
@@ -99,6 +100,8 @@ function formatarPartes(partes) {
 
 function FichaPersonagem() {
   const { id }     = useParams()
+  const [searchParams]   = useSearchParams()
+  const personagemIdParam = searchParams.get('personagemId')
   const navigate   = useNavigate()
   const { sessaoAtiva, setSessaoAtiva } = useSessao()
   const historicRef = useRef(null)
@@ -126,7 +129,7 @@ function FichaPersonagem() {
 
   const token     = localStorage.getItem('token')
   const meuUserId = token ? jwtDecode(token).id : null
-  const ehMeuChar = personagem?.usuario_id === meuUserId
+  const ehMeuChar = !personagemIdParam && personagem?.usuario_id === meuUserId
 
   useEffect(() => {
     const fn = e => { if (e.key === 'Escape') setFotoAberta(false) }
@@ -139,19 +142,19 @@ function FichaPersonagem() {
   }, [rolls])
 
   useEffect(() => {
-    async function carregar() {
-      try {
-        let sessaoLocal = sessaoAtiva
-        if (!sessaoLocal) {
-          const sessoesResp = await api.get('/sessoes')
-          sessaoLocal = sessoesResp.data.find(s => s.id === Number(id))
-          if (sessaoLocal) { setSessao(sessaoLocal); setSessaoAtiva(sessaoLocal) }
-        } else { setSessao(sessaoLocal) }
+  async function carregar() {
+    try {
+      let sessaoLocal = sessaoAtiva
+      if (!sessaoLocal) {
+        const resp = await api.get(`/sessoes/${id}`)
+        sessaoLocal = resp.data
+      }
+      setSessao(sessaoLocal)
+      setSessaoAtiva(sessaoLocal)
 
-        const resp  = await api.get(`/sessoes/${id}/meu-personagem`)
-        const dados = resp.data.personagem
-        if (!dados) { setSemPersonagem(true); return }
-
+      if (personagemIdParam) {
+        const resp  = await api.get(`/personagens/${personagemIdParam}/completo`)
+        const dados = resp.data
         setPersonagem(dados)
         setAtributos(dados.atributo        ?? null)
         setPericias(dados.pericias         ?? [])
@@ -159,17 +162,32 @@ function FichaPersonagem() {
         setPoderes(dados.poderes           ?? [])
         setComplicacoes(dados.complicacoes ?? [])
         setMachucados(dados.machucados     ?? 0)
-        if (resp.data.configuracoes) {
-          setJogsPodemAlterar(resp.data.configuracoes.jogadores_podem_alterar_machucados ?? false)
-        }
-      } catch (e) {
-        console.error('Erro ao carregar ficha:', e)
-      } finally {
-        setCarregando(false)
+        setJogsPodemAlterar(true) 
+        return
       }
+
+      const resp  = await api.get(`/sessoes/${id}/meu-personagem`)
+      const dados = resp.data.personagem
+      if (!dados) { setSemPersonagem(true); return }
+
+      setPersonagem(dados)
+      setAtributos(dados.atributo        ?? null)
+      setPericias(dados.pericias         ?? [])
+      setVantagens(dados.vantagens       ?? [])
+      setPoderes(dados.poderes           ?? [])
+      setComplicacoes(dados.complicacoes ?? [])
+      setMachucados(dados.machucados     ?? 0)
+      if (resp.data.configuracoes) {
+        setJogsPodemAlterar(resp.data.configuracoes.jogadores_podem_alterar_machucados ?? false)
+      }
+    } catch (e) {
+      console.error('Erro ao carregar ficha:', e)
+    } finally {
+      setCarregando(false)
     }
-    carregar()
-  }, [id])
+  }
+  carregar()
+}, [id, personagemIdParam])
 
   useEffect(() => {
     if (!socket || !personagem) return

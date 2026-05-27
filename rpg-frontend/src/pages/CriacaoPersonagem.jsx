@@ -4,6 +4,7 @@ import { useSessao } from '../contexts/SessaoContext'
 import api from '../services/api'
 import regras from '../data/regras_mm3e.json'
 import './CriacaoPersonagem.css'
+import ModalImportarFicha from '../components/ModalImportarFicha'
 
 const HABILIDADES = [
   { nome: 'Força',       chave: 'forca',       sigla: 'FOR', desc: 'Poder físico bruto' },
@@ -59,6 +60,7 @@ function CriacaoPersonagem() {
   const [vantagens,    setVantagens]    = useState([])
   const [poderes,      setPoderes]      = useState([])
   const [complicacoes, setComplicacoes] = useState([])
+  const [modalImportar, setModalImportar] = useState(false)
 
 useEffect(() => {
   async function init() {
@@ -171,6 +173,12 @@ useEffect(() => {
         <div className="cria-pp-sessao">
           <span className="cria-pp-sessao-nome">{sessao?.nome ?? `Sessão ${id}`}</span>
           <span className="cria-pp-np">NP {np}</span>
+          <button
+            onClick={() => setModalImportar(true)}
+            style={{ padding: '6px 14px', backgroundColor: '#111', border: '1px solid #333', borderRadius: 6, color: '#aaa', fontSize: '0.82rem', cursor: 'pointer' }}
+          >
+            ⬆ Importar Ficha
+          </button>
         </div>
         <div className="cria-pp-barra-wrapper">
           <div className="cria-pp-barra-bg">
@@ -573,6 +581,40 @@ function PainelPoder({ poder, np, ppRestante, onRemove, onUpdate, onSetEfeito, o
             </div>
           )}
         </div>
+      )}
+      {modalImportar && (
+        <ModalImportarFicha
+          sessaoId={id}
+          personagensExistentes={[]}
+          ehMestre={false}
+          onFechar={() => setModalImportar(false)}
+          onImportado={({ fichaData }) => {
+            if (!fichaData) return
+            // Preenche os campos com os dados importados
+            setNomeHeroi(fichaData.personagem?.nome ?? '')
+            setHabilidades(fichaData.atributos ? {
+              forca: fichaData.atributos.forca ?? 0,
+              vigor: fichaData.atributos.vigor ?? 0,
+              agilidade: fichaData.atributos.agilidade ?? 0,
+              destreza: fichaData.atributos.destreza ?? 0,
+              luta: fichaData.atributos.luta ?? 0,
+              intelecto: fichaData.atributos.intelecto ?? 0,
+              consciencia: fichaData.atributos.consciencia ?? 0,
+              presenca: fichaData.atributos.presenca ?? 0,
+            } : habilidades)
+            setDefesas(fichaData.atributos ? {
+              esquiva: fichaData.atributos.esquiva ?? 0,
+              aparar: fichaData.atributos.aparar ?? 0,
+              fortitude: fichaData.atributos.fortitude ?? 0,
+              vontade: fichaData.atributos.vontade ?? 0,
+            } : defesas)
+            setPericias(fichaData.pericias?.map(p => ({ nome_pericia: p.nome_pericia, graduacoes: p.graduacoes })) ?? [])
+            setVantagens(fichaData.vantagens?.map(v => v.nome_vantagem) ?? [])
+            setPoderes(fichaData.poderes ?? [])
+            setComplicacoes(fichaData.complicacoes ?? [])
+            setModalImportar(false)
+          }}
+        />
       )}
     </div>
   )

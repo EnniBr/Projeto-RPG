@@ -166,4 +166,22 @@ async function atualizarMachucados(req, res) {
     }
 }
 
-module.exports = { listarPersonagens, criarPersonagens, atualizarPersonagens, deletarPersonagens, criarPersonagemCompleto, atualizarMachucados }
+async function buscarPersonagemCompleto(req, res) {
+  try {
+    const id = Number(req.params.id)
+    const [personagem, atributo, pericias, vantagens, pPoderes, complicacoes] = await Promise.all([
+      prisma.personagem.findUnique({ where: { id } }),
+      prisma.atributo.findFirst({ where: { personagem_id: id } }),
+      prisma.personagemPericia.findMany({ where: { personagem_id: id } }),
+      prisma.personagemVantagem.findMany({ where: { personagem_id: id } }),
+      prisma.personagemPoder.findMany({ where: { personagem_id: id }, include: { poder: true } }),
+      prisma.personagemComplicacao.findMany({ where: { personagem_id: id } }),
+    ])
+    if (!personagem) return res.status(404).json({ mensagem: 'Personagem não encontrado' })
+    res.json({ ...personagem, atributo, pericias, vantagens, poderes: pPoderes.map(pp => pp.poder), complicacoes })
+  } catch (erro) {
+    res.status(500).json({ mensagem: 'Erro interno', erro: erro.message })
+  }
+}
+
+module.exports = { listarPersonagens, criarPersonagens, atualizarPersonagens, deletarPersonagens, criarPersonagemCompleto, atualizarMachucados, buscarPersonagemCompleto }
