@@ -557,19 +557,27 @@ function CardPersonagem({ personagem, mostrarJogador, sessaoId, onMachucadosChan
       <div className="pm-secao-titulo">Defesas</div>
       <div className="pm-defesas-grid">
         {[
-          { label: 'ESQ', valor: (atr?.agilidade ?? 0) + (atr?.esquiva ?? 0),    mod: (atr?.agilidade ?? 0) + (atr?.esquiva ?? 0) },
-          { label: 'APA', valor: (atr?.luta ?? 0) + (atr?.aparar ?? 0),           mod: (atr?.luta ?? 0) + (atr?.aparar ?? 0) },
-          { label: 'FOR', valor: (atr?.vigor ?? 0) + (atr?.fortitude ?? 0),       mod: (atr?.vigor ?? 0) + (atr?.fortitude ?? 0) },
-          { label: 'RES', valor: (atr?.vigor ?? 0),                                mod: atr?.vigor ?? 0 },
-          { label: 'VON', valor: (atr?.consciencia ?? 0) + (atr?.vontade ?? 0),   mod: (atr?.consciencia ?? 0) + (atr?.vontade ?? 0) },
+          { label: 'ESQ', valor: (atr?.agilidade ?? 0) + (atr?.esquiva ?? 0) },
+          { label: 'APA', valor: (atr?.luta ?? 0) + (atr?.aparar ?? 0) },
+        ].map(({ label, valor }) => (
+          <div key={label} className="pm-def-item">
+            <span className="pm-def-label">{label}</span>
+            <span className="pm-def-valor" style={{ color: '#cc3333' }}>{valor}</span>
+          </div>
+        ))}
+
+        {[
+          { label: 'FOR', valor: (atr?.vigor ?? 0) + (atr?.fortitude ?? 0),     mod: (atr?.vigor ?? 0) + (atr?.fortitude ?? 0) },
+          { label: 'RES', valor: (atr?.vigor ?? 0),                              mod: atr?.vigor ?? 0 },
+          { label: 'VON', valor: (atr?.consciencia ?? 0) + (atr?.vontade ?? 0), mod: (atr?.consciencia ?? 0) + (atr?.vontade ?? 0) },
         ].map(({ label, valor, mod }) => (
-          <div key={label} className="pm-def-item"
-            style={{ cursor: 'pointer' }}
+          <div key={label} className="pm-def-item" style={{ cursor: 'pointer' }}
             title={`Rolar ${label}: 1d20+${mod}`}
             onClick={() => onRoll(`${personagem.nome} — ${label}`, mod >= 0 ? `1d20+${mod}` : '1d20')}
           >
             <span className="pm-def-label">{label}</span>
             <span className="pm-def-valor">+{valor}</span>
+            <img src={dadoIcon} alt="" style={{ width: 11, filter: 'invert(1)', opacity: 0.5 }} />
           </div>
         ))}
       </div>

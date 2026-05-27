@@ -130,6 +130,50 @@ function ModalCriacaoNPC({ sessaoId, onFechar, onNPCCriado }) {
     }
   }
 
+  async function importarDoPDF(e) {
+    const file = e.target.files[0]
+    if (!file) return
+    try {
+      const buffer = await file.arrayBuffer()
+      const text   = new TextDecoder('latin1').decode(new Uint8Array(buffer))
+      const start  = text.lastIndexOf('%%FICHA_DATA:')
+      if (start === -1) { alert('PDF sem dados de ficha do sistema.'); return }
+      const dataStart = start + '%%FICHA_DATA:'.length
+      const end       = text.indexOf('%%END_FICHA_DATA', dataStart)
+      const dados     = JSON.parse(decodeURIComponent(escape(atob(text.slice(dataStart, end).trim()))))
+
+      setNome(dados.personagem?.nome ?? '')
+      setHabilidades({
+        forca:       dados.atributos?.forca       ?? 0,
+        vigor:       dados.atributos?.vigor       ?? 0,
+        agilidade:   dados.atributos?.agilidade   ?? 0,
+        destreza:    dados.atributos?.destreza    ?? 0,
+        luta:        dados.atributos?.luta        ?? 0,
+        intelecto:   dados.atributos?.intelecto   ?? 0,
+        consciencia: dados.atributos?.consciencia ?? 0,
+        presenca:    dados.atributos?.presenca    ?? 0,
+      })
+      setDefesas({
+        esquiva:   dados.atributos?.esquiva   ?? 0,
+        aparar:    dados.atributos?.aparar    ?? 0,
+        fortitude: dados.atributos?.fortitude ?? 0,
+        vontade:   dados.atributos?.vontade   ?? 0,
+      })
+      setPoderes(dados.poderes?.map(p => ({
+        uid:         Date.now() + Math.random(),
+        nome:        p.nome        ?? '',
+        efeito_base: p.efeito_base ?? '',
+        custo_base:  p.custo_total ? Math.round(p.custo_total / (p.graduacoes || 1)) : 1,
+        graduacoes:  p.graduacoes  ?? 1,
+        extras:      p.extras      ?? [],
+        falhas:      p.falhas      ?? [],
+        custo_total: p.custo_total ?? 1,
+      })) ?? [])
+    } catch (err) {
+      alert('Erro ao ler ficha: ' + err.message)
+    }
+  }
+
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
@@ -142,7 +186,18 @@ function ModalCriacaoNPC({ sessaoId, onFechar, onNPCCriado }) {
             <h2 className="npc-modal-titulo">Criar NPC</h2>
             <p className="npc-modal-sub">Sem limite de PP — o NP equivalente é calculado automaticamente</p>
           </div>
-          <button className="npc-fechar" onClick={onFechar}>✕</button>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <label style={{
+              padding: '6px 12px', backgroundColor: '#111',
+              border: '1px solid #333', borderRadius: 6,
+              color: '#aaa', fontSize: '0.8rem', cursor: 'pointer',
+              whiteSpace: 'nowrap'
+            }}>
+              ⬆ Importar PDF
+              <input type="file" accept=".pdf" style={{ display: 'none' }} onChange={importarDoPDF} />
+            </label>
+            <button className="npc-fechar" onClick={onFechar}>✕</button>
+          </div>
         </div>
 
         {/* Contador de PP / NP */}

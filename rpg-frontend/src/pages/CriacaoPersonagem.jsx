@@ -4,7 +4,6 @@ import { useSessao } from '../contexts/SessaoContext'
 import api from '../services/api'
 import regras from '../data/regras_mm3e.json'
 import './CriacaoPersonagem.css'
-import ModalImportarFicha from '../components/ModalImportarFicha'
 
 const HABILIDADES = [
   { nome: 'Força',       chave: 'forca',       sigla: 'FOR', desc: 'Poder físico bruto' },
@@ -208,6 +207,14 @@ useEffect(() => {
         {/* 01 — INFORMAÇÕES BÁSICAS */}
         <section className="cria-secao">
           <div className="cria-secao-titulo">
+            <label style={{
+              padding: '6px 14px', backgroundColor: '#111',
+              border: '1px solid #333', borderRadius: 6,
+              color: '#aaa', fontSize: '0.82rem', cursor: 'pointer'
+            }}>
+              ⬆ Importar PDF
+              <input type="file" accept=".pdf" style={{ display: 'none' }} onChange={importarDoPDF} />
+            </label>
             <span className="cria-secao-numero">01</span>
             <h2>Informações Básicas</h2>
           </div>
@@ -484,6 +491,53 @@ function PainelPoder({ poder, np, ppRestante, onRemove, onUpdate, onSetEfeito, o
   const [abaAtiva,  setAbaAtiva]  = useState(null)
   const efeitoSelecionado = EFEITOS_LISTA.find(e => e.nome === poder.efeito_base)
 
+async function importarDoPDF(e) {
+  const file = e.target.files[0]
+  if (!file) return
+  try {
+    const buffer = await file.arrayBuffer()
+    const text   = new TextDecoder('latin1').decode(new Uint8Array(buffer))
+    const start  = text.lastIndexOf('%%FICHA_DATA:')
+    if (start === -1) { alert('PDF sem dados de ficha do sistema.'); return }
+    const dataStart = start + '%%FICHA_DATA:'.length
+    const end       = text.indexOf('%%END_FICHA_DATA', dataStart)
+    const dados     = JSON.parse(decodeURIComponent(escape(atob(text.slice(dataStart, end).trim()))))
+
+    setNomeHeroi(dados.personagem?.nome ?? '')
+    setHabilidades({
+      forca:       dados.atributos?.forca       ?? 0,
+      vigor:       dados.atributos?.vigor       ?? 0,
+      agilidade:   dados.atributos?.agilidade   ?? 0,
+      destreza:    dados.atributos?.destreza    ?? 0,
+      luta:        dados.atributos?.luta        ?? 0,
+      intelecto:   dados.atributos?.intelecto   ?? 0,
+      consciencia: dados.atributos?.consciencia ?? 0,
+      presenca:    dados.atributos?.presenca    ?? 0,
+    })
+    setDefesas({
+      esquiva:   dados.atributos?.esquiva   ?? 0,
+      aparar:    dados.atributos?.aparar    ?? 0,
+      fortitude: dados.atributos?.fortitude ?? 0,
+      vontade:   dados.atributos?.vontade   ?? 0,
+    })
+    setPericias(dados.pericias?.map(p => ({ nome_pericia: p.nome_pericia, graduacoes: p.graduacoes })) ?? [])
+    setVantagens(dados.vantagens?.map(v => v.nome_vantagem) ?? [])
+    setPoderes(dados.poderes?.map(p => ({
+      uid: Date.now() + Math.random(),
+      nome:        p.nome        ?? '',
+      efeito_base: p.efeito_base ?? '',
+      custo_base:  p.custo_total ? Math.round(p.custo_total / (p.graduacoes || 1)) : 1,
+      graduacoes:  p.graduacoes  ?? 1,
+      extras:      p.extras      ?? [],
+      falhas:      p.falhas      ?? [],
+      custo_total: p.custo_total ?? 1,
+    })) ?? [])
+    setComplicacoes(dados.complicacoes?.map(c => ({ titulo: c.titulo ?? '', descricao: c.descricao ?? '' })) ?? [])
+  } catch (err) {
+    alert('Erro ao ler ficha: ' + err.message)
+  }
+}
+
   return (
     <div className="poder-painel">
       <div className="poder-header" onClick={() => setExpandido(e => !e)}>
@@ -581,40 +635,6 @@ function PainelPoder({ poder, np, ppRestante, onRemove, onUpdate, onSetEfeito, o
             </div>
           )}
         </div>
-      )}
-      {modalImportar && (
-        <ModalImportarFicha
-          sessaoId={id}
-          personagensExistentes={[]}
-          ehMestre={false}
-          onFechar={() => setModalImportar(false)}
-          onImportado={({ fichaData }) => {
-            if (!fichaData) return
-            // Preenche os campos com os dados importados
-            setNomeHeroi(fichaData.personagem?.nome ?? '')
-            setHabilidades(fichaData.atributos ? {
-              forca: fichaData.atributos.forca ?? 0,
-              vigor: fichaData.atributos.vigor ?? 0,
-              agilidade: fichaData.atributos.agilidade ?? 0,
-              destreza: fichaData.atributos.destreza ?? 0,
-              luta: fichaData.atributos.luta ?? 0,
-              intelecto: fichaData.atributos.intelecto ?? 0,
-              consciencia: fichaData.atributos.consciencia ?? 0,
-              presenca: fichaData.atributos.presenca ?? 0,
-            } : habilidades)
-            setDefesas(fichaData.atributos ? {
-              esquiva: fichaData.atributos.esquiva ?? 0,
-              aparar: fichaData.atributos.aparar ?? 0,
-              fortitude: fichaData.atributos.fortitude ?? 0,
-              vontade: fichaData.atributos.vontade ?? 0,
-            } : defesas)
-            setPericias(fichaData.pericias?.map(p => ({ nome_pericia: p.nome_pericia, graduacoes: p.graduacoes })) ?? [])
-            setVantagens(fichaData.vantagens?.map(v => v.nome_vantagem) ?? [])
-            setPoderes(fichaData.poderes ?? [])
-            setComplicacoes(fichaData.complicacoes ?? [])
-            setModalImportar(false)
-          }}
-        />
       )}
     </div>
   )
