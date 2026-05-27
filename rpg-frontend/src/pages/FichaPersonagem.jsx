@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
 import { useSessao } from '../contexts/SessaoContext'
 import { useSocket } from '../contexts/SocketContext'
 import api from '../services/api'
