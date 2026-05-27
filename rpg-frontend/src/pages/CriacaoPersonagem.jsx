@@ -59,6 +59,7 @@ function CriacaoPersonagem() {
   const [vantagens,    setVantagens]    = useState([])
   const [poderes,      setPoderes]      = useState([])
   const [complicacoes, setComplicacoes] = useState([])
+  const [modalImportar, setModalImportar] = useState([])
 
 useEffect(() => {
   async function init() {
