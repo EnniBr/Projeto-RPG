@@ -188,8 +188,12 @@ useEffect(() => {
         fortitude: dados.atributos?.fortitude ?? 0, vontade: dados.atributos?.vontade ?? 0,
       })
       setPericias(dados.pericias?.map(p => ({ nome_pericia: p.nome_pericia, graduacoes: p.graduacoes })) ?? [])
-      setVantagens(dados.vantagens?.map(v => ({ nome_vantagem: v.nome_vantagem, graduacoes: v.graduacoes ?? 1, graduada: false })) ?? [])
-      setPoderes(dados.poderes?.map(p => ({
+      setVantagens(dados.vantagens?.map(v => ({
+        nome_vantagem: v.nome_vantagem ?? v.nome ?? '',
+        graduacoes:    v.graduacoes   ?? 1,
+        graduada:      false
+      })) ?? [])
+        setPoderes(dados.poderes?.map(p => ({
         uid: Date.now() + Math.random(), nome: p.nome ?? '',
         efeito_base: p.efeito_base ?? '',
         custo_base: p.custo_total ? Math.round(p.custo_total / (p.graduacoes || 1)) : 1,
