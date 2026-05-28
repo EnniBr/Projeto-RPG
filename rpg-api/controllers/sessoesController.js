@@ -2,33 +2,34 @@ const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 
 async function listarSessoes(req, res) {
-    try {
-        const userId = req.usuario.id
+  try {
+    const userId = req.usuario.id
 
-        const sessoesMestre = await prisma.sessao.findMany({
-            where: { mestre_id: userId }
-        })
+    const sessoesMestre = await prisma.sessao.findMany({
+      where: { mestre_id: userId }
+    })
 
-        const sessoesJogador = await prisma.sessao.findMany({
-            where: {
-                personagens: {
-                    some: {
-                        personagem: { usuario_id: userId }
-                    }
-                }
-            }
-        })
+    const sessoesJogador = await prisma.sessao.findMany({
+      where: {
+        mestre_id: { not: userId },
+        personagens: {
+          some: {
+            personagem: { usuario_id: userId }
+          }
+        }
+      }
+    })
 
-        const todasSessoes = [
-            ...sessoesMestre.map(s => ({ ...s, papel: 'mestre' })),
-            ...sessoesJogador.map(s => ({ ...s, papel: 'jogador' }))
-        ]
+    const todasSessoes = [
+      ...sessoesMestre.map(s => ({ ...s, papel: 'mestre' })),
+      ...sessoesJogador.map(s => ({ ...s, papel: 'jogador' }))
+    ]
 
-        res.json(todasSessoes)
-    } catch (erro) {
-        console.log('ERRO AO LISTAR SESSOES:', erro.message)
-        res.status(500).json({ mensagem: 'Erro interno', erro: erro.message })
-    }
+    res.json(todasSessoes)
+  } catch (erro) {
+    console.log('ERRO AO LISTAR SESSOES:', erro.message)
+    res.status(500).json({ mensagem: 'Erro interno', erro: erro.message })
+  }
 }
 
 async function criarSessoes(req, res) {

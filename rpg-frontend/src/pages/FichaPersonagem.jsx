@@ -346,6 +346,12 @@ function FichaPersonagem() {
           <h1>NP {np}</h1>
           <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
             <button
+              onClick={() => navigate('/dashboard')}
+              style={{ padding: '4px 12px', backgroundColor: '#111', border: '1px solid #333', borderRadius: 4, color: '#aaa', fontSize: '0.8rem', cursor: 'pointer' }}
+            >
+              ← Dashboard
+            </button>
+            <button
               onClick={() => setModalExportar(true)}
               style={{ padding: '4px 12px', backgroundColor: '#111', border: '1px solid #333', borderRadius: 4, color: '#aaa', fontSize: '0.8rem', cursor: 'pointer' }}
             >
