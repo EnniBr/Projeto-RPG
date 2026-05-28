@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react'
-import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useSessao } from '../contexts/SessaoContext'
 import api from '../services/api'
@@ -60,7 +59,7 @@ function CriacaoPersonagem() {
   const [vantagens,    setVantagens]    = useState([])
   const [poderes,      setPoderes]      = useState([])
   const [complicacoes, setComplicacoes] = useState([])
-  const [modalImportar, setModalImportar] = useState([])
+  const [modalImportar, setModalImportar] = useState(false)
   const importRef = useRef(null)
 
 useEffect(() => {
@@ -84,7 +83,7 @@ useEffect(() => {
   const ppHabilidades = Object.values(habilidades).reduce((s, v) => s + v * 2, 0)
   const ppDefesas     = Object.values(defesas).reduce((s, v) => s + v, 0)
   const ppPericias    = Math.ceil(pericias.reduce((s, p) => s + p.graduacoes, 0) / 2)
-  const ppVantagens   = vantagens.reduce((s, v) => s + v.graduacoes, 0)
+  const ppVantagens = vantagens.reduce((s, v) => s + (Number(v.graduacoes) || 1), 0)
   const ppPoderes     = poderes.reduce((s, p) => s + p.custo_total, 0)
   const ppGasto       = ppHabilidades + ppDefesas + ppPericias + ppVantagens + ppPoderes
   const ppRestante    = ppTotal - ppGasto
@@ -188,12 +187,13 @@ useEffect(() => {
         fortitude: dados.atributos?.fortitude ?? 0, vontade: dados.atributos?.vontade ?? 0,
       })
       setPericias(dados.pericias?.map(p => ({ nome_pericia: p.nome_pericia, graduacoes: p.graduacoes })) ?? [])
+      console.log('Vantagens do PDF:', dados.vantagens)
       setVantagens(dados.vantagens?.map(v => ({
         nome_vantagem: v.nome_vantagem ?? v.nome ?? '',
         graduacoes:    v.graduacoes   ?? 1,
         graduada:      false
       })) ?? [])
-        setPoderes(dados.poderes?.map(p => ({
+      setPoderes(dados.poderes?.map(p => ({
         uid: Date.now() + Math.random(), nome: p.nome ?? '',
         efeito_base: p.efeito_base ?? '',
         custo_base: p.custo_total ? Math.round(p.custo_total / (p.graduacoes || 1)) : 1,
