@@ -193,13 +193,21 @@ useEffect(() => {
         graduacoes:    v.graduacoes   ?? 1,
         graduada:      false
       })) ?? [])
-      setPoderes(dados.poderes?.map(p => ({
-        uid: Date.now() + Math.random(), nome: p.nome ?? '',
-        efeito_base: p.efeito_base ?? '',
-        custo_base: p.custo_total ? Math.round(p.custo_total / (p.graduacoes || 1)) : 1,
-        graduacoes: p.graduacoes ?? 1, extras: p.extras ?? [],
-        falhas: p.falhas ?? [], custo_total: p.custo_total ?? 1,
-      })) ?? [])
+      setPoderes(dados.poderes?.map(p => {
+        const efeito = EFEITOS_LISTA.find(e => e.nome === p.efeito_base)
+        const custoBase = efeito?.custo_base ?? 1
+        const poder = {
+          uid:         Date.now() + Math.random(),
+          nome:        p.nome        ?? '',
+          efeito_base: p.efeito_base ?? '',
+          custo_base:  custoBase,
+          graduacoes:  p.graduacoes  ?? 1,
+          extras:      Array.isArray(p.extras) ? p.extras : [],
+          falhas:      Array.isArray(p.falhas) ? p.falhas : [],
+          custo_total: 1,
+        }
+        return recalcPoder(poder)
+      }) ?? [])
       setComplicacoes(dados.complicacoes?.map(c => ({ titulo: c.titulo ?? '', descricao: c.descricao ?? '' })) ?? [])
     } catch (err) {
       alert('Erro ao ler ficha: ' + err.message)
