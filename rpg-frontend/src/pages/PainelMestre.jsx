@@ -7,6 +7,7 @@ import dadoIcon from '../assets/dice-d20-svgrepo-com.svg'
 import regras from '../data/regras_mm3e.json'
 import ModalCriacaoNPC from '../components/ModalCriacaoNPC'
 import './PainelMestre.css'
+import ModalExportarFicha from '../components/ModalExportarFicha'
 
 // ─── Constantes ────────────────────────────────────────────────────────────
 
@@ -93,6 +94,8 @@ function PainelMestre() {
   const [carregando,     setCarregando]     = useState(true)
   const [copiado,        setCopiado]        = useState(false)
   const [settingsAberto, setSettingsAberto] = useState(false)
+  const [modalFichaOffline, setModalFichaOffline] = useState(false)
+  const [dadosFichaOffline, setDadosFichaOffline] = useState(null)
   const [modalNPC,       setModalNPC]       = useState(false)
   const [liveRolls,      setLiveRolls]      = useState([])
   const [masterInput,    setMasterInput]    = useState('')
@@ -348,6 +351,10 @@ function PainelMestre() {
               <h2 className="pm-secao-nome">NPCs</h2>
               <span className="pm-secao-count">{npcs.length} NPC{npcs.length !== 1 ? 's' : ''}</span>
               <button className="pm-btn-criar-npc" onClick={() => setModalNPC(true)}>+ Criar NPC</button>
+              <button className="pm-btn-criar-npc" style={{ backgroundColor: '#111', borderColor: '#333', color: '#aaa' }}
+                onClick={() => setModalFichaOffline(true)}>
+                📄 Criar Ficha Offline
+              </button>
             </div>
             {npcs.length === 0 ? (
               <div className="pm-vazio pm-vazio-npc">
@@ -411,6 +418,34 @@ function PainelMestre() {
       {/* MODAL NPC */}
       {modalNPC && (
         <ModalCriacaoNPC sessaoId={id} onFechar={() => setModalNPC(false)} onNPCCriado={onNPCCriado} />
+      )}
+
+      {/* MODAL FICHA OFFLINE */}
+      {modalFichaOffline && (
+        <ModalCriacaoNPC
+          sessaoId={id}
+          modoOffline={true}
+          onFechar={() => { setModalFichaOffline(false); setDadosFichaOffline(null) }}
+          onNPCCriado={() => {}}
+          onExportarOffline={(dados) => {
+            setDadosFichaOffline(dados)
+            setModalFichaOffline(false)
+          }}
+        />
+      )}
+
+      {/* MODAL EXPORTAR FICHA OFFLINE */}
+      {dadosFichaOffline && (
+        <ModalExportarFicha
+          personagem={{ nome: dadosFichaOffline.nome, tipo: 'npc' }}
+          atributos={dadosFichaOffline.atributos}
+          pericias={[]}
+          vantagens={[]}
+          poderes={dadosFichaOffline.poderes}
+          complicacoes={[]}
+          sessao={sessao}
+          onFechar={() => setDadosFichaOffline(null)}
+        />
       )}
 
     </div>

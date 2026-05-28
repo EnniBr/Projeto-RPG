@@ -32,7 +32,7 @@ const FALHAS_LISTA = regras.modificadores.falhas
 
 // ─── Componente ────────────────────────────────────────────────────────────
 
-function ModalCriacaoNPC({ sessaoId, onFechar, onNPCCriado }) {
+function ModalCriacaoNPC({ sessaoId, onFechar, onNPCCriado, modoOffline = false, onExportarOffline }) {
   const [salvando, setSalvando] = useState(false)
   const [erro,     setErro]     = useState('')
 
@@ -100,24 +100,38 @@ function ModalCriacaoNPC({ sessaoId, onFechar, onNPCCriado }) {
 
   async function salvar() {
     if (!nome.trim()) { setErro('O NPC precisa de um nome.'); return }
+
+    const dadosNPC = {
+      nome: nome.trim(),
+      atributos: { ...habilidades, ...defesas },
+      poderes: poderes.map(p => ({
+        nome:        p.nome || p.efeito_base || 'Poder',
+        efeito_base: p.efeito_base,
+        graduacoes:  p.graduacoes,
+        custo_total: p.custo_total,
+        extras:      p.extras,
+        falhas:      p.falhas,
+        descritores: '',
+      })),
+    }
+
+    // Modo offline — só exporta, não salva no banco
+    if (modoOffline) {
+      onExportarOffline?.(dadosNPC)
+      return
+    }
+
+    // Modo normal — salva no banco
     setSalvando(true); setErro('')
     try {
       const resp = await api.post('/personagens/criar-completo', {
         sessao_id:    Number(sessaoId),
-        nome:         nome.trim(),
+        nome:         dadosNPC.nome,
         tipo:         'npc',
-        atributos:    { ...habilidades, ...defesas },
+        atributos:    dadosNPC.atributos,
         pericias:     [],
         vantagens:    [],
-        poderes:      poderes.map(p => ({
-          nome:        p.nome || p.efeito_base || 'Poder',
-          efeito_base: p.efeito_base,
-          graduacoes:  p.graduacoes,
-          custo_total: p.custo_total,
-          extras:      p.extras,
-          falhas:      p.falhas,
-          descritores: '',
-        })),
+        poderes:      dadosNPC.poderes,
         complicacoes: [],
       })
       onNPCCriado(resp.data)
@@ -287,7 +301,10 @@ function ModalCriacaoNPC({ sessaoId, onFechar, onNPCCriado }) {
           <div className="npc-rodape-acoes">
             <button className="npc-btn-cancelar" onClick={onFechar}>Cancelar</button>
             <button className="npc-btn-salvar" onClick={salvar} disabled={salvando || !nome.trim()}>
-              {salvando ? 'Salvando...' : `✔ Criar NPC (NP ${npEquivalente})`}
+              {modoOffline
+                ? '📄 Gerar PDF'
+                : salvando ? 'Salvando...' : `✔ Criar NPC (NP ${npEquivalente})`
+              }
             </button>
           </div>
         </div>
