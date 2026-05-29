@@ -237,6 +237,6 @@ async function editarPersonagemCompleto(req, res) {
     console.error('Erro ao editar personagem:', erro)
     res.status(500).json({ mensagem: 'Erro interno', erro: erro.message })
   }
-}
+} 
 
 module.exports = { listarPersonagens, criarPersonagens, atualizarPersonagens, deletarPersonagens, criarPersonagemCompleto, atualizarMachucados, buscarPersonagemCompleto, editarPersonagemCompleto }
