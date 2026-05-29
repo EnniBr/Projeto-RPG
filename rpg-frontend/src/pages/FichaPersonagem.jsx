@@ -125,6 +125,7 @@ function FichaPersonagem() {
   const [jogsPodemAlterar, setJogsPodemAlterar] = useState(false)
   const [modalExportar, setModalExportar] = useState(false)
   const [modalImportar, setModalImportar] = useState(false)
+  const [jogsPodeEditar, setJogsPodeEditar] = useState(false)
 
   const token     = localStorage.getItem('token')
   const meuUserId = token ? jwtDecode(token).id : null
@@ -178,6 +179,7 @@ function FichaPersonagem() {
       setMachucados(dados.machucados     ?? 0)
       if (resp.data.configuracoes) {
         setJogsPodemAlterar(resp.data.configuracoes.jogadores_podem_alterar_machucados ?? false)
+        setJogsPodeEditar(resp.data.configuracoes.jogadores_podem_editar_ficha ?? false)
       }
     } catch (e) {
       console.error('Erro ao carregar ficha:', e)
@@ -194,8 +196,9 @@ function FichaPersonagem() {
     socket.on('machucados-update', ({ personagemId, machucados }) => {
       if (personagemId === personagem.id) setMachucados(machucados)
     })
-    socket.on('settings-update', ({ jogadores_podem_alterar_machucados }) => {
+    socket.on('settings-update', ({ jogadores_podem_alterar_machucados, jogadores_podem_editar_ficha }) => {
       setJogsPodemAlterar(jogadores_podem_alterar_machucados)
+      setJogsPodeEditar(jogadores_podem_editar_ficha)  // ← novo
     })
     return () => {
       socket.off('machucados-update')
@@ -363,6 +366,14 @@ function FichaPersonagem() {
             >
               ⬆ Importar
             </button>
+            {(personagemIdParam || (ehMeuChar && jogsPodeEditar)) && (
+            <button
+              onClick={() => window.open(`/sessao/${id}/editar-personagem/${personagem?.id}`, '_blank')}
+              style={{ padding: '4px 12px', backgroundColor: '#111', border: '1px solid #333', borderRadius: 4, color: '#aaa', fontSize: '0.8rem', cursor: 'pointer' }}
+            >
+              ✏ Editar Ficha
+            </button>
+          )}
           </div>
         </div>
       </div>

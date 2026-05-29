@@ -300,14 +300,14 @@ function PainelMestre() {
           <div className="pm-settings-titulo">Configurações da Sessão</div>
           <div className="pm-setting-item">
             <div className="pm-setting-info">
-              <span className="pm-setting-nome">Jogadores controlam próprios machucados</span>
-              <span className="pm-setting-desc">Se desativado, apenas o mestre pode alterar a vida dos personagens.</span>
+              <span className="pm-setting-nome">Jogadores podem editar a própria ficha</span>
+              <span className="pm-setting-desc">Se ativado, jogadores podem editar atributos, poderes e perícias do próprio personagem.</span>
             </div>
             <button
-              className={`pm-toggle ${sessao?.jogadores_podem_alterar_machucados ? 'pm-toggle-on' : ''}`}
-              onClick={() => salvarConfiguracao('jogadores_podem_alterar_machucados', !sessao?.jogadores_podem_alterar_machucados)}
+              className={`pm-toggle ${sessao?.jogadores_podem_editar_ficha ? 'pm-toggle-on' : ''}`}
+              onClick={() => salvarConfiguracao('jogadores_podem_editar_ficha', !sessao?.jogadores_podem_editar_ficha)}
             >
-              {sessao?.jogadores_podem_alterar_machucados ? 'Ativado' : 'Desativado'}
+              {sessao?.jogadores_podem_editar_ficha ? 'Ativado' : 'Desativado'}
             </button>
           </div>
           <div className="pm-settings-nota">Mais configurações em breve (integração Owlbear, rolagem pública, etc.)</div>

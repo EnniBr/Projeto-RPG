@@ -7,6 +7,7 @@ import PainelMestre from './pages/PainelMestre.jsx'
 import FichaPersonagem from './pages/FichaPersonagem.jsx'
 import RotaProtegida from './components/RotaProtegida.jsx'
 import CriacaoPersonagem from './pages/CriacaoPersonagem.jsx'
+import EditarPersonagem from './pages/EditarPersonagem.jsx'
 
 function App() {
   const [modalAberto, setModalAberto] = useState(false)
@@ -35,6 +36,11 @@ function App() {
         <Route path="/sessao/:id/criar-personagem" element={
           <RotaProtegida>
             <CriacaoPersonagem />
+          </RotaProtegida>
+        } />
+        <Route path="/sessao/:id/editar-personagem/:personagemId" element={
+          <RotaProtegida>
+            <EditarPersonagem />
           </RotaProtegida>
         } />
       </Routes>
