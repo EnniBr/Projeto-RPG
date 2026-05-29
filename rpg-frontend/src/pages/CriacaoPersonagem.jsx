@@ -41,6 +41,12 @@ const FALHAS_LISTA = regras.modificadores.falhas
 const TITULO_MAX = 60
 const DESC_MAX   = 280
 
+// ─── Biblioteca de poderes (localStorage) ─────────────────────────────────
+const LIBRARY_KEY = 'rpg_biblioteca_poderes'
+function getBiblioteca() {
+  try { return JSON.parse(localStorage.getItem(LIBRARY_KEY) || '[]') } catch { return [] }
+}
+
 function CriacaoPersonagem() {
   const { id }     = useParams()
   const navigate   = useNavigate()
@@ -59,31 +65,35 @@ function CriacaoPersonagem() {
   const [vantagens,    setVantagens]    = useState([])
   const [poderes,      setPoderes]      = useState([])
   const [complicacoes, setComplicacoes] = useState([])
-  const [modalImportar, setModalImportar] = useState(false)
+
+  // Biblioteca
+  const [bibliotecaAberta, setBibliotecaAberta] = useState(false)
+  const [biblioteca,       setBiblioteca]       = useState(getBiblioteca)
+
   const importRef = useRef(null)
 
-useEffect(() => {
-  async function init() {
-    try {
-      const [sessaoResp, checkResp] = await Promise.all([
-        api.get(`/sessoes/${id}`),
-        api.get(`/sessoes/${id}/meu-personagem`),
-      ])
-      if (checkResp.data.personagem) { navigate(`/sessao/${id}/ficha`, { replace: true }); return }
-      setSessao(sessaoResp.data)
-      setSessaoAtiva(sessaoResp.data)
-    } catch (e) { console.error('Erro ao inicializar criação:', e) }
-    finally { setVerificando(false) }
-  }
-  init()
-}, [id])
+  useEffect(() => {
+    async function init() {
+      try {
+        const [sessaoResp, checkResp] = await Promise.all([
+          api.get(`/sessoes/${id}`),
+          api.get(`/sessoes/${id}/meu-personagem`),
+        ])
+        if (checkResp.data.personagem) { navigate(`/sessao/${id}/ficha`, { replace: true }); return }
+        setSessao(sessaoResp.data)
+        setSessaoAtiva(sessaoResp.data)
+      } catch (e) { console.error('Erro ao inicializar criação:', e) }
+      finally { setVerificando(false) }
+    }
+    init()
+  }, [id])
 
   const np            = sessao?.nivel_poder ?? 10
   const ppTotal       = np * 15
   const ppHabilidades = Object.values(habilidades).reduce((s, v) => s + v * 2, 0)
   const ppDefesas     = Object.values(defesas).reduce((s, v) => s + v, 0)
   const ppPericias    = Math.ceil(pericias.reduce((s, p) => s + p.graduacoes, 0) / 2)
-  const ppVantagens = vantagens.reduce((s, v) => s + (Number(v.graduacoes) || 1), 0)
+  const ppVantagens   = vantagens.reduce((s, v) => s + (Number(v.graduacoes) || 1), 0)
   const ppPoderes     = poderes.reduce((s, p) => s + p.custo_total, 0)
   const ppGasto       = ppHabilidades + ppDefesas + ppPericias + ppVantagens + ppPoderes
   const ppRestante    = ppTotal - ppGasto
@@ -143,6 +153,48 @@ useEffect(() => {
     setComplicacoes(prev => prev.map(c => c.uid !== uid ? c : { ...c, [field]: value }))
   }
 
+  // ─── Biblioteca ────────────────────────────────────────────────────────────
+
+  function salvarPoderNaBiblioteca(poder) {
+    const nova = [...getBiblioteca(), {
+      id:          Date.now(),
+      nome:        poder.nome || poder.efeito_base || 'Poder',
+      efeito_base: poder.efeito_base,
+      custo_base:  poder.custo_base,
+      graduacoes:  poder.graduacoes,
+      extras:      poder.extras  ?? [],
+      falhas:      poder.falhas  ?? [],
+      custo_total: poder.custo_total,
+      salvoEm:     new Date().toLocaleDateString('pt-BR'),
+    }]
+    localStorage.setItem(LIBRARY_KEY, JSON.stringify(nova))
+    setBiblioteca(nova)
+  }
+
+  function removerDaBiblioteca(libId) {
+    const nova = getBiblioteca().filter(p => p.id !== libId)
+    localStorage.setItem(LIBRARY_KEY, JSON.stringify(nova))
+    setBiblioteca(nova)
+  }
+
+  function adicionarDaBiblioteca(poderLib) {
+    const efeito = EFEITOS_LISTA.find(e => e.nome === poderLib.efeito_base)
+    const novo = {
+      uid:         Date.now(),
+      nome:        poderLib.nome,
+      efeito_base: poderLib.efeito_base,
+      custo_base:  efeito?.custo_base ?? poderLib.custo_base ?? 1,
+      graduacoes:  poderLib.graduacoes,
+      extras:      poderLib.extras ?? [],
+      falhas:      poderLib.falhas ?? [],
+      custo_total: 1,
+    }
+    setPoderes(prev => [...prev, recalcPoder(novo)])
+    setBibliotecaAberta(false)
+  }
+
+  // ─── Salvar ────────────────────────────────────────────────────────────────
+
   async function salvar() {
     if (!nomeHeroi.trim()) { setErro('O herói precisa de um nome!'); return }
     if (ppRestante < 0)    { setErro(`Você gastou ${Math.abs(ppRestante)} PP a mais. Revise as escolhas.`); return }
@@ -163,6 +215,8 @@ useEffect(() => {
       setErro('Erro ao salvar personagem. Verifique o console.')
     } finally { setSalvando(false) }
   }
+
+  // ─── Importar PDF ──────────────────────────────────────────────────────────
 
   async function importarDoPDF(e) {
     const file = e.target.files[0]
@@ -187,20 +241,18 @@ useEffect(() => {
         fortitude: dados.atributos?.fortitude ?? 0, vontade: dados.atributos?.vontade ?? 0,
       })
       setPericias(dados.pericias?.map(p => ({ nome_pericia: p.nome_pericia, graduacoes: p.graduacoes })) ?? [])
-      console.log('Vantagens do PDF:', dados.vantagens)
       setVantagens(dados.vantagens?.map(v => ({
         nome_vantagem: v.nome_vantagem ?? v.nome ?? '',
-        graduacoes:    v.graduacoes   ?? 1,
+        graduacoes:    Number(v.graduacoes) || 1,
         graduada:      false
       })) ?? [])
       setPoderes(dados.poderes?.map(p => {
         const efeito = EFEITOS_LISTA.find(e => e.nome === p.efeito_base)
-        const custoBase = efeito?.custo_base ?? 1
         const poder = {
           uid:         Date.now() + Math.random(),
           nome:        p.nome        ?? '',
           efeito_base: p.efeito_base ?? '',
-          custo_base:  custoBase,
+          custo_base:  efeito?.custo_base ?? 1,
           graduacoes:  p.graduacoes  ?? 1,
           extras:      Array.isArray(p.extras) ? p.extras : [],
           falhas:      Array.isArray(p.falhas) ? p.falhas : [],
@@ -208,7 +260,7 @@ useEffect(() => {
         }
         return recalcPoder(poder)
       }) ?? [])
-      setComplicacoes(dados.complicacoes?.map(c => ({ titulo: c.titulo ?? '', descricao: c.descricao ?? '' })) ?? [])
+      setComplicacoes(dados.complicacoes?.map(c => ({ uid: Date.now() + Math.random(), titulo: c.titulo ?? '', descricao: c.descricao ?? '' })) ?? [])
     } catch (err) {
       alert('Erro ao ler ficha: ' + err.message)
     }
@@ -229,13 +281,7 @@ useEffect(() => {
           >
             ⬆ Importar PDF
           </button>
-          <input
-            ref={importRef}
-            type="file"
-            accept=".pdf"
-            style={{ display: 'none' }}
-            onChange={importarDoPDF}
-          />
+          <input ref={importRef} type="file" accept=".pdf" style={{ display: 'none' }} onChange={importarDoPDF} />
         </div>
         <div className="cria-pp-barra-wrapper">
           <div className="cria-pp-barra-bg">
@@ -326,27 +372,29 @@ useEffect(() => {
             </p>
             <div className="cria-defesas-grid">
               {DEFESAS_CONFIG.map(({ nome: n, chave, base, desc }) => {
-                const valorBase     = habilidades[base]
-                const valorComprado = defesas[chave]
+                const baseVal = habilidades[base]
+                const extra   = defesas[chave]
                 return (
                   <div key={chave} className="cria-def-card">
                     <div className="cria-def-nome">{n}</div>
                     <div className="cria-def-desc">{desc}</div>
-                    <div className="cria-def-base">Base ({base}): <strong>+{valorBase}</strong></div>
-                    <div className="cria-def-controles">
-                      <button className="cria-btn-ctrl" onClick={() => changeDefesa(chave, -1)} disabled={valorComprado === 0}>−</button>
-                      <span className="cria-def-comprado">+{valorComprado} <small>PP</small></span>
+                    <div className="cria-def-base">Base ({base.slice(0,3).toUpperCase()}): <strong>+{baseVal}</strong></div>
+                    <div className="cria-hab-controles">
+                      <button className="cria-btn-ctrl" onClick={() => changeDefesa(chave, -1)} disabled={extra === 0}>−</button>
+                      <span className="cria-hab-valor">+{extra}</span>
                       <button className="cria-btn-ctrl" onClick={() => changeDefesa(chave, 1)} disabled={ppRestante < 1}>+</button>
                     </div>
-                    <div className="cria-def-total">Total: <strong>{valorBase + valorComprado}</strong></div>
+                    <div className="cria-hab-pp">Total: <strong style={{color:'#cc3333'}}>{baseVal + extra}</strong></div>
                   </div>
                 )
               })}
-              <div className="cria-def-card cria-def-card-info">
+              <div className="cria-def-card cria-def-resistencia">
                 <div className="cria-def-nome">Resistência</div>
                 <div className="cria-def-desc">Suportar dano físico</div>
-                <div className="cria-def-base">Base (vigor): <strong>+{habilidades.vigor}</strong></div>
-                <div className="cria-def-nota">Aumentada via poder de <em>Proteção</em></div>
+                <div className="cria-def-base">Base (VIG): <strong>+{habilidades.vigor}</strong></div>
+                <div style={{ color: '#555', fontSize: '0.8rem', fontStyle: 'italic', marginTop: 4 }}>
+                  Aumentada via poder de Proteção
+                </div>
               </div>
             </div>
           </div>
@@ -357,20 +405,19 @@ useEffect(() => {
           <div className="cria-secao-titulo">
             <span className="cria-secao-numero">04</span>
             <h2>Perícias</h2>
-            <span className="cria-secao-custo-tag">1 PP a cada 2 graduações</span>
+            <span className="cria-secao-custo-tag">1 PP / 2 graduações</span>
           </div>
           <div className="cria-secao-corpo">
             {pericias.length > 0 && (
               <div className="cria-escolhidos">
-                <div className="cria-escolhidos-titulo">Treinadas ({pericias.length})</div>
+                <div className="cria-escolhidos-titulo">ADICIONADAS ({pericias.length})</div>
                 {pericias.map(p => (
                   <div key={p.nome_pericia} className="cria-escolhido-linha">
                     <span className="cria-esq-nome">{p.nome_pericia}</span>
-                    <span className="cria-esq-hab">{p.habilidade}</span>
                     <div className="cria-esq-controles">
                       <button onClick={() => changePericiaGrad(p.nome_pericia, -1)}>−</button>
                       <span>{p.graduacoes}</span>
-                      <button onClick={() => changePericiaGrad(p.nome_pericia, 1)} disabled={ppRestante < 0.5}>+</button>
+                      <button onClick={() => changePericiaGrad(p.nome_pericia, 1)} disabled={ppRestante < 1}>+</button>
                     </div>
                     <button className="cria-esq-remover" onClick={() => togglePericia({ nome: p.nome_pericia })}>✕</button>
                   </div>
@@ -384,7 +431,7 @@ useEffect(() => {
                   <div key={p.nome} className={`cria-opcao ${ativa ? 'cria-opcao-ativa' : ''}`}
                     onClick={() => togglePericia(p)} title={p.descricao}>
                     <span className="cria-opcao-nome">{p.nome}</span>
-                    <span className="cria-opcao-hab">{p.habilidade_vinculada}</span>
+                    <span className="cria-opcao-hab">{p.habilidade_vinculada?.substring(0, 3).toUpperCase()}</span>
                     <span className="cria-opcao-badge">{ativa ? '✓' : '+'}</span>
                   </div>
                 )
@@ -403,7 +450,7 @@ useEffect(() => {
           <div className="cria-secao-corpo">
             {vantagens.length > 0 && (
               <div className="cria-escolhidos">
-                <div className="cria-escolhidos-titulo">Adicionadas ({vantagens.length})</div>
+                <div className="cria-escolhidos-titulo">ADICIONADAS ({vantagens.length})</div>
                 {vantagens.map(v => (
                   <div key={v.nome_vantagem} className="cria-escolhido-linha">
                     <span className="cria-esq-nome">{v.nome_vantagem}</span>
@@ -441,8 +488,51 @@ useEffect(() => {
             <span className="cria-secao-numero">06</span>
             <h2>Poderes</h2>
             <span className="cria-secao-custo-tag">(custo base + extras − falhas) × graduações</span>
+            <button
+              onClick={() => setBibliotecaAberta(a => !a)}
+              style={{ marginLeft: 'auto', padding: '4px 12px', backgroundColor: bibliotecaAberta ? '#8b0000' : '#111', border: '1px solid #333', borderRadius: 6, color: bibliotecaAberta ? 'white' : '#aaa', fontSize: '0.82rem', cursor: 'pointer' }}
+            >
+              📚 Biblioteca {biblioteca.length > 0 ? `(${biblioteca.length})` : ''}
+            </button>
           </div>
           <div className="cria-secao-corpo">
+
+            {/* Painel da biblioteca */}
+            {bibliotecaAberta && (
+              <div style={{ backgroundColor: '#111', border: '1px solid #222', borderRadius: 8, padding: 12, marginBottom: 12 }}>
+                <div style={{ fontSize: '0.75rem', color: '#555', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>
+                  Poderes salvos — clique para adicionar ao personagem
+                </div>
+                {biblioteca.length === 0 ? (
+                  <p style={{ color: '#444', fontSize: '0.85rem', fontFamily: 'Crimson Pro, serif' }}>
+                    Nenhum poder salvo ainda. Use o botão 💾 em cada poder criado para salvar na biblioteca.
+                  </p>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    {biblioteca.map(p => (
+                      <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', backgroundColor: '#1a1a1a', borderRadius: 6, border: '1px solid #222' }}>
+                        <div style={{ flex: 1 }}>
+                          <span style={{ color: 'white', fontSize: '0.88rem', fontWeight: 600 }}>{p.nome}</span>
+                          {p.efeito_base && <span style={{ color: '#666', fontSize: '0.8rem' }}> — {p.efeito_base}</span>}
+                          <span style={{ color: '#cc3333', fontSize: '0.8rem', marginLeft: 6 }}>{p.graduacoes}grad · {p.custo_total}PP</span>
+                          <span style={{ color: '#444', fontSize: '0.75rem', marginLeft: 6 }}>salvo em {p.salvoEm}</span>
+                        </div>
+                        <button onClick={() => adicionarDaBiblioteca(p)}
+                          style={{ padding: '3px 10px', backgroundColor: '#8b0000', color: 'white', border: 'none', borderRadius: 4, cursor: 'pointer', fontSize: '0.8rem' }}>
+                          + Usar
+                        </button>
+                        <button onClick={() => removerDaBiblioteca(p.id)}
+                          style={{ padding: '3px 8px', backgroundColor: 'transparent', color: '#444', border: '1px solid #222', borderRadius: 4, cursor: 'pointer', fontSize: '0.8rem' }}
+                          title="Remover da biblioteca">
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             {poderes.length === 0 && (
               <p className="cria-secao-info">
                 Clique em <strong>Adicionar Poder</strong> para criar os poderes do seu herói.
@@ -455,6 +545,7 @@ useEffect(() => {
                 onUpdate={(f, v) => updatePoder(poder.uid, f, v)}
                 onSetEfeito={nome => setPoderEfeito(poder.uid, nome)}
                 onToggleMod={(tipo, nome) => togglePoderMod(poder.uid, tipo, nome)}
+                onSalvarNaBiblioteca={salvarPoderNaBiblioteca}
               />
             ))}
             <button className="cria-btn-adicionar-poder" onClick={addPoder}>+ Adicionar Poder</button>
@@ -466,17 +557,16 @@ useEffect(() => {
           <div className="cria-secao-titulo">
             <span className="cria-secao-numero">07</span>
             <h2>Complicações</h2>
+            <span className="cria-secao-custo-tag">Não custam PP — mas concedem pontos heroicos</span>
           </div>
           <div className="cria-secao-corpo">
             <p className="cria-secao-info">
-              Complicações são aspectos do herói que criam drama: inimigos, segredos, responsabilidades,
-              fraquezas. <strong>Não custam PP</strong> — o Mestre recompensa com Pontos de Herói quando
-              elas entram em jogo.
+              Complicações são aspectos do personagem que criam obstáculos e drama.
+              Recomendado: pelo menos 2 complicações.
             </p>
-
             {complicacoes.map(c => (
-              <div key={c.uid} className="comp-card">
-                <div className="comp-card-header">
+              <div key={c.uid} className="cria-complicacao-card">
+                <div className="cria-campo-grupo">
                   <div className="cria-campo" style={{ flex: 1 }}>
                     <label>
                       Título
@@ -503,7 +593,6 @@ useEffect(() => {
                 </div>
               </div>
             ))}
-
             <button className="cria-btn-adicionar-poder" onClick={addComplicacao}>
               + Adicionar Complicação
             </button>
@@ -536,7 +625,7 @@ useEffect(() => {
   )
 }
 
-function PainelPoder({ poder, np, ppRestante, onRemove, onUpdate, onSetEfeito, onToggleMod }) {
+function PainelPoder({ poder, np, ppRestante, onRemove, onUpdate, onSetEfeito, onToggleMod, onSalvarNaBiblioteca }) {
   const [expandido, setExpandido] = useState(true)
   const [abaAtiva,  setAbaAtiva]  = useState(null)
   const efeitoSelecionado = EFEITOS_LISTA.find(e => e.nome === poder.efeito_base)
@@ -551,6 +640,13 @@ function PainelPoder({ poder, np, ppRestante, onRemove, onUpdate, onSetEfeito, o
         <div className="poder-header-direita">
           <span className="poder-custo-badge">{poder.custo_total} PP</span>
           <span className="poder-expandir">{expandido ? '▲' : '▼'}</span>
+          <button
+            title="Salvar na biblioteca"
+            onClick={e => { e.stopPropagation(); onSalvarNaBiblioteca(poder) }}
+            style={{ background: 'none', border: '1px solid #333', borderRadius: 4, color: '#888', padding: '2px 6px', cursor: 'pointer', fontSize: '0.85rem' }}
+          >
+            💾
+          </button>
           <button className="cria-esq-remover" onClick={e => { e.stopPropagation(); onRemove() }}>✕</button>
         </div>
       </div>

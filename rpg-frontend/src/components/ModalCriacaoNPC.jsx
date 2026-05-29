@@ -3,8 +3,6 @@ import api from '../services/api'
 import regras from '../data/regras_mm3e.json'
 import './ModalCriacaoNPC.css'
 
-// ─── Dados do JSON ────────────────────────────────────────────────────────
-
 const HABILIDADES = [
   { nome: 'Força',       chave: 'forca',       sigla: 'FOR' },
   { nome: 'Vigor',       chave: 'vigor',       sigla: 'VIG' },
@@ -30,13 +28,17 @@ const EFEITOS_LISTA = regras.efeitos_de_poderes.efeitos
 const EXTRAS_LISTA = regras.modificadores.extras
 const FALHAS_LISTA = regras.modificadores.falhas
 
-// ─── Componente ────────────────────────────────────────────────────────────
+// ─── Biblioteca ────────────────────────────────────────────────────────────
+const LIBRARY_KEY = 'rpg_biblioteca_poderes'
+function getBiblioteca() {
+  try { return JSON.parse(localStorage.getItem(LIBRARY_KEY) || '[]') } catch { return [] }
+}
 
 function ModalCriacaoNPC({ sessaoId, onFechar, onNPCCriado, modoOffline = false, onExportarOffline }) {
   const [salvando, setSalvando] = useState(false)
   const [erro,     setErro]     = useState('')
 
-  const [nome,       setNome]       = useState('')
+  const [nome,        setNome]        = useState('')
   const [habilidades, setHabilidades] = useState({
     forca: 0, vigor: 0, agilidade: 0, destreza: 0,
     luta: 0, intelecto: 0, consciencia: 0, presenca: 0,
@@ -44,7 +46,9 @@ function ModalCriacaoNPC({ sessaoId, onFechar, onNPCCriado, modoOffline = false,
   const [defesas, setDefesas] = useState({ esquiva: 0, aparar: 0, fortitude: 0, vontade: 0 })
   const [poderes, setPoderes] = useState([])
 
-  // ── PP sem limite — mostra NP equivalente ────────────────────────────────
+  // Biblioteca
+  const [bibliotecaAberta, setBibliotecaAberta] = useState(false)
+  const [biblioteca,       setBiblioteca]       = useState(getBiblioteca)
 
   const ppHabilidades = Object.values(habilidades).reduce((s, v) => s + v * 2, 0)
   const ppDefesas     = Object.values(defesas).reduce((s, v) => s + v, 0)
@@ -52,41 +56,32 @@ function ModalCriacaoNPC({ sessaoId, onFechar, onNPCCriado, modoOffline = false,
   const ppTotal       = ppHabilidades + ppDefesas + ppPoderes
   const npEquivalente = Math.max(1, Math.floor(ppTotal / 15))
 
-  // ── Helpers ───────────────────────────────────────────────────────────────
-
   function changeHabilidade(chave, delta) {
     setHabilidades(prev => ({ ...prev, [chave]: Math.max(0, prev[chave] + delta) }))
   }
-
   function changeDefesa(chave, delta) {
     setDefesas(prev => ({ ...prev, [chave]: Math.max(0, prev[chave] + delta) }))
   }
-
   function recalcPoder(p) {
     const custo = Math.max(1, p.custo_base + p.extras.length - p.falhas.length)
     return { ...p, custo_total: custo * p.graduacoes }
   }
-
   function addPoder() {
     setPoderes(prev => [...prev, {
       uid: Date.now(), nome: '', efeito_base: '',
       custo_base: 1, graduacoes: 1, extras: [], falhas: [], custo_total: 1,
     }])
   }
-
   function removePoder(uid) { setPoderes(prev => prev.filter(p => p.uid !== uid)) }
-
   function updatePoder(uid, field, value) {
     setPoderes(prev => prev.map(p => p.uid !== uid ? p : recalcPoder({ ...p, [field]: value })))
   }
-
   function setPoderEfeito(uid, efeitoNome) {
     const efeito = EFEITOS_LISTA.find(e => e.nome === efeitoNome)
     setPoderes(prev => prev.map(p =>
       p.uid !== uid ? p : recalcPoder({ ...p, efeito_base: efeitoNome, custo_base: efeito?.custo_base ?? 1 })
     ))
   }
-
   function toggleMod(uid, tipo, nome) {
     setPoderes(prev => prev.map(p => {
       if (p.uid !== uid) return p
@@ -96,7 +91,96 @@ function ModalCriacaoNPC({ sessaoId, onFechar, onNPCCriado, modoOffline = false,
     }))
   }
 
-  // ── Salvar ────────────────────────────────────────────────────────────────
+  // ─── Biblioteca ──────────────────────────────────────────────────────────
+
+  function salvarPoderNaBiblioteca(poder) {
+    const nova = [...getBiblioteca(), {
+      id:          Date.now(),
+      nome:        poder.nome || poder.efeito_base || 'Poder',
+      efeito_base: poder.efeito_base,
+      custo_base:  poder.custo_base,
+      graduacoes:  poder.graduacoes,
+      extras:      poder.extras  ?? [],
+      falhas:      poder.falhas  ?? [],
+      custo_total: poder.custo_total,
+      salvoEm:     new Date().toLocaleDateString('pt-BR'),
+    }]
+    localStorage.setItem(LIBRARY_KEY, JSON.stringify(nova))
+    setBiblioteca(nova)
+  }
+
+  function removerDaBiblioteca(libId) {
+    const nova = getBiblioteca().filter(p => p.id !== libId)
+    localStorage.setItem(LIBRARY_KEY, JSON.stringify(nova))
+    setBiblioteca(nova)
+  }
+
+  function adicionarDaBiblioteca(poderLib) {
+    const efeito = EFEITOS_LISTA.find(e => e.nome === poderLib.efeito_base)
+    const novo = {
+      uid:         Date.now(),
+      nome:        poderLib.nome,
+      efeito_base: poderLib.efeito_base,
+      custo_base:  efeito?.custo_base ?? poderLib.custo_base ?? 1,
+      graduacoes:  poderLib.graduacoes,
+      extras:      poderLib.extras ?? [],
+      falhas:      poderLib.falhas ?? [],
+      custo_total: 1,
+    }
+    setPoderes(prev => [...prev, recalcPoder(novo)])
+    setBibliotecaAberta(false)
+  }
+
+  // ─── Importar PDF ─────────────────────────────────────────────────────────
+
+  async function importarDoPDF(e) {
+    const file = e.target.files[0]
+    if (!file) return
+    try {
+      const buffer = await file.arrayBuffer()
+      const text   = new TextDecoder('latin1').decode(new Uint8Array(buffer))
+      const start  = text.lastIndexOf('%%FICHA_DATA:')
+      if (start === -1) { alert('PDF sem dados de ficha do sistema.'); return }
+      const dataStart = start + '%%FICHA_DATA:'.length
+      const end       = text.indexOf('%%END_FICHA_DATA', dataStart)
+      const dados     = JSON.parse(decodeURIComponent(escape(atob(text.slice(dataStart, end).trim()))))
+      setNome(dados.personagem?.nome ?? '')
+      setHabilidades({
+        forca:       dados.atributos?.forca       ?? 0,
+        vigor:       dados.atributos?.vigor       ?? 0,
+        agilidade:   dados.atributos?.agilidade   ?? 0,
+        destreza:    dados.atributos?.destreza    ?? 0,
+        luta:        dados.atributos?.luta        ?? 0,
+        intelecto:   dados.atributos?.intelecto   ?? 0,
+        consciencia: dados.atributos?.consciencia ?? 0,
+        presenca:    dados.atributos?.presenca    ?? 0,
+      })
+      setDefesas({
+        esquiva:   dados.atributos?.esquiva   ?? 0,
+        aparar:    dados.atributos?.aparar    ?? 0,
+        fortitude: dados.atributos?.fortitude ?? 0,
+        vontade:   dados.atributos?.vontade   ?? 0,
+      })
+      setPoderes(dados.poderes?.map(p => {
+        const efeito = EFEITOS_LISTA.find(e => e.nome === p.efeito_base)
+        const poder = {
+          uid:         Date.now() + Math.random(),
+          nome:        p.nome        ?? '',
+          efeito_base: p.efeito_base ?? '',
+          custo_base:  efeito?.custo_base ?? 1,
+          graduacoes:  p.graduacoes  ?? 1,
+          extras:      Array.isArray(p.extras) ? p.extras : [],
+          falhas:      Array.isArray(p.falhas) ? p.falhas : [],
+          custo_total: 1,
+        }
+        return recalcPoder(poder)
+      }) ?? [])
+    } catch (err) {
+      alert('Erro ao ler ficha: ' + err.message)
+    }
+  }
+
+  // ─── Salvar ───────────────────────────────────────────────────────────────
 
   async function salvar() {
     if (!nome.trim()) { setErro('O NPC precisa de um nome.'); return }
@@ -115,13 +199,11 @@ function ModalCriacaoNPC({ sessaoId, onFechar, onNPCCriado, modoOffline = false,
       })),
     }
 
-    // Modo offline — só exporta, não salva no banco
     if (modoOffline) {
       onExportarOffline?.(dadosNPC)
       return
     }
 
-    // Modo normal — salva no banco
     setSalvando(true); setErro('')
     try {
       const resp = await api.post('/personagens/criar-completo', {
@@ -144,69 +226,23 @@ function ModalCriacaoNPC({ sessaoId, onFechar, onNPCCriado, modoOffline = false,
     }
   }
 
-  async function importarDoPDF(e) {
-    const file = e.target.files[0]
-    if (!file) return
-    try {
-      const buffer = await file.arrayBuffer()
-      const text   = new TextDecoder('latin1').decode(new Uint8Array(buffer))
-      const start  = text.lastIndexOf('%%FICHA_DATA:')
-      if (start === -1) { alert('PDF sem dados de ficha do sistema.'); return }
-      const dataStart = start + '%%FICHA_DATA:'.length
-      const end       = text.indexOf('%%END_FICHA_DATA', dataStart)
-      const dados     = JSON.parse(decodeURIComponent(escape(atob(text.slice(dataStart, end).trim()))))
-
-      setNome(dados.personagem?.nome ?? '')
-      setHabilidades({
-        forca:       dados.atributos?.forca       ?? 0,
-        vigor:       dados.atributos?.vigor       ?? 0,
-        agilidade:   dados.atributos?.agilidade   ?? 0,
-        destreza:    dados.atributos?.destreza    ?? 0,
-        luta:        dados.atributos?.luta        ?? 0,
-        intelecto:   dados.atributos?.intelecto   ?? 0,
-        consciencia: dados.atributos?.consciencia ?? 0,
-        presenca:    dados.atributos?.presenca    ?? 0,
-      })
-      setDefesas({
-        esquiva:   dados.atributos?.esquiva   ?? 0,
-        aparar:    dados.atributos?.aparar    ?? 0,
-        fortitude: dados.atributos?.fortitude ?? 0,
-        vontade:   dados.atributos?.vontade   ?? 0,
-      })
-      setPoderes(dados.poderes?.map(p => ({
-        uid:         Date.now() + Math.random(),
-        nome:        p.nome        ?? '',
-        efeito_base: p.efeito_base ?? '',
-        custo_base:  p.custo_total ? Math.round(p.custo_total / (p.graduacoes || 1)) : 1,
-        graduacoes:  p.graduacoes  ?? 1,
-        extras:      p.extras      ?? [],
-        falhas:      p.falhas      ?? [],
-        custo_total: p.custo_total ?? 1,
-      })) ?? [])
-    } catch (err) {
-      alert('Erro ao ler ficha: ' + err.message)
-    }
-  }
-
-  // ── Render ────────────────────────────────────────────────────────────────
-
   return (
     <>
       <div className="npc-overlay" onClick={onFechar} />
-
       <div className="npc-modal">
+
+        {/* Header */}
         <div className="npc-modal-header">
           <div>
-            <h2 className="npc-modal-titulo">Criar NPC</h2>
-            <p className="npc-modal-sub">Sem limite de PP — o NP equivalente é calculado automaticamente</p>
+            <h2 className="npc-modal-titulo">{modoOffline ? 'Criar Ficha Offline' : 'Criar NPC'}</h2>
+            <p className="npc-modal-sub">
+              {modoOffline
+                ? 'Crie a ficha e exporte como PDF — sem salvar no banco'
+                : 'Sem limite de PP — o NP equivalente é calculado automaticamente'}
+            </p>
           </div>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            <label style={{
-              padding: '6px 12px', backgroundColor: '#111',
-              border: '1px solid #333', borderRadius: 6,
-              color: '#aaa', fontSize: '0.8rem', cursor: 'pointer',
-              whiteSpace: 'nowrap'
-            }}>
+            <label style={{ padding: '6px 12px', backgroundColor: '#111', border: '1px solid #333', borderRadius: 6, color: '#aaa', fontSize: '0.8rem', cursor: 'pointer', whiteSpace: 'nowrap' }}>
               ⬆ Importar PDF
               <input type="file" accept=".pdf" style={{ display: 'none' }} onChange={importarDoPDF} />
             </label>
@@ -214,7 +250,7 @@ function ModalCriacaoNPC({ sessaoId, onFechar, onNPCCriado, modoOffline = false,
           </div>
         </div>
 
-        {/* Contador de PP / NP */}
+        {/* Contador PP/NP */}
         <div className="npc-pp-barra">
           <div className="npc-pp-info">
             <span className="npc-pp-total">{ppTotal} PP gastos</span>
@@ -281,13 +317,57 @@ function ModalCriacaoNPC({ sessaoId, onFechar, onNPCCriado, modoOffline = false,
 
           {/* PODERES */}
           <div className="npc-secao">
-            <div className="npc-secao-titulo">Poderes</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+              <div className="npc-secao-titulo" style={{ margin: 0 }}>Poderes</div>
+              <button
+                onClick={() => setBibliotecaAberta(a => !a)}
+                style={{ marginLeft: 'auto', padding: '3px 10px', backgroundColor: bibliotecaAberta ? '#8b0000' : '#111', border: '1px solid #333', borderRadius: 6, color: bibliotecaAberta ? 'white' : '#aaa', fontSize: '0.78rem', cursor: 'pointer' }}
+              >
+                📚 Biblioteca {biblioteca.length > 0 ? `(${biblioteca.length})` : ''}
+              </button>
+            </div>
+
+            {/* Painel da biblioteca */}
+            {bibliotecaAberta && (
+              <div style={{ backgroundColor: '#0f0f0f', border: '1px solid #222', borderRadius: 8, padding: 10, marginBottom: 10 }}>
+                <div style={{ fontSize: '0.72rem', color: '#555', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>
+                  Poderes salvos — clique para adicionar
+                </div>
+                {biblioteca.length === 0 ? (
+                  <p style={{ color: '#444', fontSize: '0.82rem' }}>
+                    Nenhum poder salvo. Use o botão 💾 para salvar poderes na biblioteca.
+                  </p>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                    {biblioteca.map(p => (
+                      <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 8px', backgroundColor: '#1a1a1a', borderRadius: 5, border: '1px solid #222' }}>
+                        <div style={{ flex: 1 }}>
+                          <span style={{ color: 'white', fontSize: '0.85rem', fontWeight: 600 }}>{p.nome}</span>
+                          {p.efeito_base && <span style={{ color: '#666', fontSize: '0.78rem' }}> — {p.efeito_base}</span>}
+                          <span style={{ color: '#cc3333', fontSize: '0.78rem', marginLeft: 6 }}>{p.graduacoes}grad · {p.custo_total}PP</span>
+                        </div>
+                        <button onClick={() => adicionarDaBiblioteca(p)}
+                          style={{ padding: '2px 8px', backgroundColor: '#8b0000', color: 'white', border: 'none', borderRadius: 4, cursor: 'pointer', fontSize: '0.75rem' }}>
+                          + Usar
+                        </button>
+                        <button onClick={() => removerDaBiblioteca(p.id)}
+                          style={{ padding: '2px 6px', backgroundColor: 'transparent', color: '#444', border: '1px solid #222', borderRadius: 4, cursor: 'pointer', fontSize: '0.75rem' }}>
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             {poderes.map(p => (
               <PainelPoderNPC key={p.uid} poder={p}
                 onRemove={() => removePoder(p.uid)}
                 onUpdate={(f, v) => updatePoder(p.uid, f, v)}
                 onSetEfeito={nome => setPoderEfeito(p.uid, nome)}
                 onToggleMod={(tipo, nome) => toggleMod(p.uid, tipo, nome)}
+                onSalvarNaBiblioteca={salvarPoderNaBiblioteca}
               />
             ))}
             <button className="npc-btn-add-poder" onClick={addPoder}>+ Adicionar Poder</button>
@@ -295,16 +375,13 @@ function ModalCriacaoNPC({ sessaoId, onFechar, onNPCCriado, modoOffline = false,
 
         </div>
 
-        {/* RODAPÉ */}
+        {/* Rodapé */}
         <div className="npc-rodape">
           {erro && <p className="npc-erro">{erro}</p>}
           <div className="npc-rodape-acoes">
             <button className="npc-btn-cancelar" onClick={onFechar}>Cancelar</button>
             <button className="npc-btn-salvar" onClick={salvar} disabled={salvando || !nome.trim()}>
-              {modoOffline
-                ? '📄 Gerar PDF'
-                : salvando ? 'Salvando...' : `✔ Criar NPC (NP ${npEquivalente})`
-              }
+              {modoOffline ? '📄 Gerar PDF' : salvando ? 'Salvando...' : `✔ Criar NPC (NP ${npEquivalente})`}
             </button>
           </div>
         </div>
@@ -313,9 +390,7 @@ function ModalCriacaoNPC({ sessaoId, onFechar, onNPCCriado, modoOffline = false,
   )
 }
 
-// ─── Painel de um poder ────────────────────────────────────────────────────
-
-function PainelPoderNPC({ poder, onRemove, onUpdate, onSetEfeito, onToggleMod }) {
+function PainelPoderNPC({ poder, onRemove, onUpdate, onSetEfeito, onToggleMod, onSalvarNaBiblioteca }) {
   const [abaAtiva, setAbaAtiva] = useState(null)
   const efeitoInfo = EFEITOS_LISTA.find(e => e.nome === poder.efeito_base)
 
@@ -324,6 +399,13 @@ function PainelPoderNPC({ poder, onRemove, onUpdate, onSetEfeito, onToggleMod })
       <div className="npc-poder-header">
         <span className="npc-poder-nome">{poder.nome || '(novo poder)'}</span>
         <span className="npc-poder-custo">{poder.custo_total} PP</span>
+        <button
+          title="Salvar na biblioteca"
+          onClick={() => onSalvarNaBiblioteca(poder)}
+          style={{ background: 'none', border: '1px solid #333', borderRadius: 4, color: '#888', padding: '1px 5px', cursor: 'pointer', fontSize: '0.8rem' }}
+        >
+          💾
+        </button>
         <button className="npc-poder-remover" onClick={onRemove}>✕</button>
       </div>
 
@@ -344,9 +426,7 @@ function PainelPoderNPC({ poder, onRemove, onUpdate, onSetEfeito, onToggleMod })
         </div>
       </div>
 
-      {efeitoInfo && (
-        <div className="npc-poder-desc">{efeitoInfo.descricao}</div>
-      )}
+      {efeitoInfo && <div className="npc-poder-desc">{efeitoInfo.descricao}</div>}
 
       <div className="npc-poder-nums">
         <div className="npc-campo">
