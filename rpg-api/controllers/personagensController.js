@@ -184,4 +184,4 @@ async function buscarPersonagemCompleto(req, res) {
   }
 }
 
-module.exports = { listarPersonagens, criarPersonagens, atualizarPersonagens, deletarPersonagens, criarPersonagemCompleto, atualizarMachucados, buscarPersonagemCompleto }
+module.exports = { listarPersonagens, criarPersonagens, atualizarPersonagens, deletarPersonagens, criarPersonagemCompleto, atualizarMachucados, buscarPersonagemCompleto, editarPersonagemCompleto }
