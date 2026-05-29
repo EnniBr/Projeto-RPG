@@ -11,5 +11,6 @@ router.delete('/:id', verificarToken, personagensController.deletarPersonagens)
 router.post('/criar-completo', verificarToken, personagensController.criarPersonagemCompleto)
 router.patch('/:id/machucados', verificarToken, personagensController.atualizarMachucados)
 router.get('/:id/completo', verificarToken, personagensController.buscarPersonagemCompleto)
+router.put('/:id/completo', verificarToken, personagensController.editarPersonagemCompleto)
 
 module.exports = router

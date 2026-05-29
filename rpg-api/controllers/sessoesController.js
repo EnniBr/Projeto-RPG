@@ -204,7 +204,10 @@ async function atualizarConfiguracoesSessao(req, res) {
 
         const dados = {}
         if (typeof req.body.jogadores_podem_alterar_machucados === 'boolean') {
-            dados.jogadores_podem_alterar_machucados = req.body.jogadores_podem_alterar_machucados
+        dados.jogadores_podem_alterar_machucados = req.body.jogadores_podem_alterar_machucados
+        }
+        if (typeof req.body.jogadores_podem_editar_ficha === 'boolean') {
+        dados.jogadores_podem_editar_ficha = req.body.jogadores_podem_editar_ficha
         }
 
         if (Object.keys(dados).length === 0) {
@@ -216,7 +219,8 @@ async function atualizarConfiguracoesSessao(req, res) {
         try {
             const { getIO } = require('../socket')
             getIO().to(`sessao-${id}`).emit('settings-update', {
-                jogadores_podem_alterar_machucados: atualizada.jogadores_podem_alterar_machucados
+                jogadores_podem_alterar_machucados: atualizada.jogadores_podem_alterar_machucados,
+                jogadores_podem_editar_ficha:       atualizada.jogadores_podem_editar_ficha,
             })
         } catch (socketErr) {
             console.log('Socket.io warning em configuracoes:', socketErr.message)
@@ -241,4 +245,56 @@ async function buscarSessao(req, res) {
     }
 }
 
-module.exports = { listarSessoes, buscarSessao, criarSessoes, atualizarSessoes, deletarSessoes, entrarPorCodigo, meuPersonagemNaSessao, personagensDaSessao, atualizarConfiguracoesSessao }
+async function editarPersonagemCompleto(req, res) {
+  try {
+    const id = Number(req.params.id)
+    const { nome, atributos, pericias = [], vantagens = [], poderes = [], complicacoes = [] } = req.body
+
+    await prisma.$transaction(async (tx) => {
+      await tx.personagem.update({ where: { id }, data: { nome } })
+
+      await tx.atributo.updateMany({ where: { personagem_id: id }, data: atributos })
+
+      await tx.personagemPericia.deleteMany({ where: { personagem_id: id } })
+      for (const p of pericias) {
+        await tx.personagemPericia.create({ data: { nome_pericia: p.nome_pericia, graduacoes: p.graduacoes, personagem_id: id } })
+      }
+
+      await tx.personagemVantagem.deleteMany({ where: { personagem_id: id } })
+      for (const v of vantagens) {
+        await tx.personagemVantagem.create({ data: { nome_vantagem: v.nome_vantagem, graduacoes: v.graduacoes, personagem_id: id } })
+      }
+
+      await tx.personagemPoder.deleteMany({ where: { personagem_id: id } })
+      for (const poder of poderes) {
+        const poderCriado = await tx.poder.create({
+          data: {
+            nome:        poder.nome || poder.efeito_base,
+            efeito_base: poder.efeito_base,
+            graduacoes:  poder.graduacoes,
+            custo_total: poder.custo_total,
+            extras:      JSON.stringify(poder.extras || []),
+            falhas:      JSON.stringify(poder.falhas || []),
+            descritores: poder.descritores || '',
+            criador_id:  req.usuario.id,
+          }
+        })
+        await tx.personagemPoder.create({ data: { personagem_id: id, poder_id: poderCriado.id } })
+      }
+
+      await tx.personagemComplicacao.deleteMany({ where: { personagem_id: id } })
+      for (const c of complicacoes) {
+        await tx.personagemComplicacao.create({
+          data: { titulo: c.titulo.substring(0, 60), descricao: c.descricao.substring(0, 280), personagem_id: id }
+        })
+      }
+    })
+
+    res.json({ mensagem: 'Personagem atualizado com sucesso' })
+  } catch (erro) {
+    console.error('Erro ao editar personagem:', erro)
+    res.status(500).json({ mensagem: 'Erro interno', erro: erro.message })
+  }
+}
+
+module.exports = { listarSessoes, buscarSessao, criarSessoes, atualizarSessoes, deletarSessoes, entrarPorCodigo, meuPersonagemNaSessao, personagensDaSessao, atualizarConfiguracoesSessao, editarPersonagemCompleto }

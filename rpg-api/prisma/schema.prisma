@@ -102,6 +102,7 @@ model Sessao {
   mestre_id Int
   nivel_poder Int @default(10)
   jogadores_podem_alterar_machucados Boolean @default(false)
+  jogadores_podem_editar_ficha       Boolean @default(false) 
   codigo String   @unique @default(cuid())
   mestre    Usuario @relation(fields: [mestre_id], references: [id])
   personagens SessaoPersonagem[]
