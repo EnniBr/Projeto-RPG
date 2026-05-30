@@ -296,8 +296,22 @@ function PainelMestre() {
 
       {/* SETTINGS */}
       {settingsAberto && (
-        <div className="pm-settings-panel">
-          <div className="pm-settings-titulo">Configurações da Sessão</div>
+  <div className="pm-settings-panel">
+    <div className="pm-settings-titulo">Configurações da Sessão</div>
+
+    <div className="pm-setting-item">
+      <div className="pm-setting-info">
+        <span className="pm-setting-nome">Jogadores podem alterar próprios machucados</span>
+        <span className="pm-setting-desc">Se ativado, jogadores podem aumentar e diminuir a própria barra de vida.</span>
+      </div>
+      <button
+        className={`pm-toggle ${sessao?.jogadores_podem_alterar_machucados ? 'pm-toggle-on' : ''}`}
+        onClick={() => salvarConfiguracao('jogadores_podem_alterar_machucados', !sessao?.jogadores_podem_alterar_machucados)}
+      >
+        {sessao?.jogadores_podem_alterar_machucados ? 'Ativado' : 'Desativado'}
+      </button>
+    </div>
+
           <div className="pm-setting-item">
             <div className="pm-setting-info">
               <span className="pm-setting-nome">Jogadores podem editar a própria ficha</span>
@@ -310,6 +324,7 @@ function PainelMestre() {
               {sessao?.jogadores_podem_editar_ficha ? 'Ativado' : 'Desativado'}
             </button>
           </div>
+
           <div className="pm-settings-nota">Mais configurações em breve (integração Owlbear, rolagem pública, etc.)</div>
         </div>
       )}
