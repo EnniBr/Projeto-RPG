@@ -47,6 +47,9 @@ function App() {
             <EditarPersonagem />
           </RotaProtegida>
         } />
+        <Route path="/verificar-email" element={<VerificarEmail />} />
+        <Route path="/nova-senha"      element={<NovaSenha />} />
+        <Route path="/auth/callback"   element={<AuthCallback />} />
       </Routes>
 
       {modalAberto && <Login fecharModal={() => setModalAberto(false)} />}
