@@ -12,7 +12,7 @@ import ModalExportarFicha from '../components/ModalExportarFicha'
 
 // ─── Constantes ────────────────────────────────────────────────────────────
 
-const MAX_MACH   = 4rgb(84, 173, 122)
+const MAX_MACH   = 4
 const CORES_MACH = ['#2ecc71', '#f1c40f', '#e67e22', '#c0392b', '#8b0000']
 const STATUS_LABEL = [
   { classe: 'pm-status-ok',      texto: 'Saudável'        },
