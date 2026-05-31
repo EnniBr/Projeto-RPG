@@ -1,12 +1,19 @@
-const { Resend } = require('resend')
-const resend = new Resend(process.env.RESEND_API_KEY)
+const nodemailer = require('nodemailer')
 
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173'
 
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+})
+
 async function enviarEmailVerificacao(email, nome, token) {
   try {
-    await resend.emails.send({
-      from:    'RPG System <onboarding@resend.dev>',
+    await transporter.sendMail({
+      from:    `"RPG System" <${process.env.EMAIL_USER}>`,
       to:      email,
       subject: 'Confirme seu email — RPG System',
       html: `
@@ -24,15 +31,16 @@ async function enviarEmailVerificacao(email, nome, token) {
         </div>
       `,
     })
+    console.log(`Email de verificação enviado para ${email}`)
   } catch (e) {
-    console.error('Erro ao enviar email de verificação:', e)
+    console.error('Erro ao enviar email de verificação:', e.message)
   }
 }
 
 async function enviarEmailResetSenha(email, nome, token) {
   try {
-    await resend.emails.send({
-      from:    'RPG System <onboarding@resend.dev>',
+    await transporter.sendMail({
+      from:    `"RPG System" <${process.env.EMAIL_USER}>`,
       to:      email,
       subject: 'Recuperar senha — RPG System',
       html: `
@@ -50,8 +58,9 @@ async function enviarEmailResetSenha(email, nome, token) {
         </div>
       `,
     })
+    console.log(`Email de reset enviado para ${email}`)
   } catch (e) {
-    console.error('Erro ao enviar email de reset:', e)
+    console.error('Erro ao enviar email de reset:', e.message)
   }
 }
 
