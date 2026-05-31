@@ -29,6 +29,7 @@ const personagemPericiaRoutes  = require('./routes/personagempericias')
 const personagemVantagemRoutes = require('./routes/personagemvantagens')
 const fotosRoutes          = require('./routes/fotosRoutes')
 const exportarRoutes = require('./routes/exportar')
+const passport = require('passport')
 
 app.use('/usuarios',   usuariosRoutes)
 app.use('/personagens', personagensRoutes)
@@ -40,6 +41,7 @@ app.use('/personagens/:personagemId/pericias',  personagemPericiaRoutes)
 app.use('/personagens/:personagemId/vantagens', personagemVantagemRoutes)
 app.use('/personagens', fotosRoutes)
 app.use('/sessoes', exportarRoutes)
+app.use(passport.initialize())
 
 // ── Servidor ──
 const PORT = process.env.PORT || 3000
