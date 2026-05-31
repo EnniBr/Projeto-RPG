@@ -1,0 +1,270 @@
+/* ══════════════════════════════════════════════════════════
+   PAINEL DO MESTRE — MOBILE RESPONSIVO
+   Desktop: layout com sidebar (inalterado)
+   Mobile:  bottom tab bar com 4 abas
+   ══════════════════════════════════════════════════════════ */
+
+/* Tab bar — oculta no desktop */
+.pm-mobile-tab-bar { display: none; }
+
+/* Conteúdo mobile — oculto no desktop */
+.pm-mobile-content { display: none; }
+
+@media (max-width: 768px) {
+
+  /* ── Header mobile ── */
+  .pm-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 10px 14px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+
+  .pm-header-esquerda { width: 100%; }
+  .pm-header-sessao   { flex-direction: column; gap: 0; }
+
+  .pm-header-direita {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .pm-codigo-wrapper { flex: 1; min-width: 0; }
+
+  /* ── Oculta layout desktop ── */
+  .pm-layout         { display: none; }
+  .pm-settings-panel { display: none; } /* settings ficam na aba Config */
+
+  /* ── Conteúdo mobile ── */
+  .pm-mobile-content {
+    display: block;
+    padding: 12px 12px 80px 12px;
+    overflow-y: auto;
+  }
+
+  /* ── Seção no mobile ── */
+  .pm-mobile-secao-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #1a1a1a;
+  }
+
+  .pm-mobile-secao-header h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.2rem;
+    letter-spacing: 1px;
+    color: white;
+    margin: 0;
+  }
+
+  .pm-mobile-secao-header .pm-secao-count {
+    color: #555;
+    font-size: 0.8rem;
+  }
+
+  .pm-mobile-secao-header .pm-btn-criar-npc {
+    margin-left: auto;
+    font-size: 0.78rem;
+    padding: 5px 10px;
+  }
+
+  /* Grade de cards no mobile — coluna única */
+  .pm-mobile-content .pm-grade {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  /* Card no mobile — mais compacto */
+  .pm-mobile-content .pm-card {
+    width: 100%;
+  }
+
+  /* ── Aba Dados mobile ── */
+  .pm-mobile-dados {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .pm-mobile-dados .pm-sidebar-input-area {
+    display: flex;
+    border: 1px solid #222;
+    border-radius: 6px;
+    overflow: hidden;
+    background-color: #0a0a0a;
+  }
+
+  .pm-mobile-dados .pm-sidebar-input {
+    flex: 1;
+    padding: 12px 14px;
+    background: transparent;
+    border: none;
+    color: white;
+    font-family: 'Crimson Pro', serif;
+    font-size: 0.95rem;
+    outline: none;
+  }
+
+  .pm-mobile-dados .pm-sidebar-input-btn {
+    width: 46px;
+    background-color: #1a1a1a;
+    border: none;
+    border-left: 1px solid #222;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .pm-mobile-dados .pm-sidebar-input-btn:hover { background-color: #8b0000; }
+
+  .pm-mobile-dados .pm-sidebar-feed {
+    min-height: 300px;
+    max-height: 55vh;
+    overflow-y: auto;
+    background-color: #080808;
+    border: 1px solid #1a1a1a;
+    border-radius: 6px;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  /* ── Aba Config mobile ── */
+  .pm-mobile-config {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .pm-mobile-config .pm-settings-titulo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 2px;
+    color: #555;
+    padding: 8px 0 12px;
+    border-bottom: 1px solid #1a1a1a;
+    margin-bottom: 12px;
+  }
+
+  .pm-mobile-config .pm-setting-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 0;
+    border-bottom: 1px solid #111;
+    gap: 12px;
+  }
+
+  .pm-mobile-config .pm-setting-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    flex: 1;
+  }
+
+  .pm-mobile-config .pm-setting-nome {
+    color: white;
+    font-size: 0.88rem;
+    font-weight: 600;
+  }
+
+  .pm-mobile-config .pm-setting-desc {
+    color: #555;
+    font-size: 0.78rem;
+    font-family: 'Crimson Pro', serif;
+    line-height: 1.4;
+  }
+
+  .pm-mobile-config .pm-settings-nota {
+    color: #333;
+    font-size: 0.78rem;
+    font-family: 'Crimson Pro', serif;
+    text-align: center;
+    padding: 16px 0 8px;
+    font-style: italic;
+  }
+
+  /* ── Animação de entrada ── */
+  .pm-mobile-aba-content {
+    animation: pmAbaEntrar 0.18s ease;
+  }
+
+  @keyframes pmAbaEntrar {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── BOTTOM TAB BAR ── */
+  .pm-mobile-tab-bar {
+    display: flex;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: 64px;
+    background-color: #111;
+    border-top: 1px solid #222;
+    z-index: 100;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.6);
+  }
+
+  .pm-mobile-tab {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #444;
+    transition: color 0.2s, background-color 0.2s;
+    padding: 0;
+    position: relative;
+  }
+
+  .pm-mobile-tab:hover { color: #888; }
+
+  .pm-mobile-tab.ativa {
+    color: #cc3333;
+    background-color: #8b000011;
+  }
+
+  .pm-mobile-tab.ativa::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 10%; right: 10%;
+    height: 2px;
+    background-color: #8b0000;
+    border-radius: 0 0 2px 2px;
+  }
+
+  .pm-mobile-tab-icone { font-size: 1.3rem; line-height: 1; }
+  .pm-mobile-tab-label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.65rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* Badge de contagem na aba */
+  .pm-mobile-tab-badge {
+    position: absolute;
+    top: 6px; right: 14px;
+    background-color: #8b0000;
+    color: white;
+    font-size: 0.6rem;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: bold;
+  }
+}

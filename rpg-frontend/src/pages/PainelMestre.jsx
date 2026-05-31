@@ -7,11 +7,12 @@ import dadoIcon from '../assets/dice-d20-svgrepo-com.svg'
 import regras from '../data/regras_mm3e.json'
 import ModalCriacaoNPC from '../components/ModalCriacaoNPC'
 import './PainelMestre.css'
+import './PainelMestre_mobile.css'
 import ModalExportarFicha from '../components/ModalExportarFicha'
 
 // ─── Constantes ────────────────────────────────────────────────────────────
 
-const MAX_MACH   = 4
+const MAX_MACH   = 4rgb(84, 173, 122)
 const CORES_MACH = ['#2ecc71', '#f1c40f', '#e67e22', '#c0392b', '#8b0000']
 const STATUS_LABEL = [
   { classe: 'pm-status-ok',      texto: 'Saudável'        },
@@ -97,6 +98,7 @@ function PainelMestre() {
   const [modalFichaOffline, setModalFichaOffline] = useState(false)
   const [dadosFichaOffline, setDadosFichaOffline] = useState(null)
   const [modalNPC,       setModalNPC]       = useState(false)
+  const [abaMobile, setAbaMobile] = useState('jogadores')
   const [liveRolls,      setLiveRolls]      = useState([])
   const [masterInput,    setMasterInput]    = useState('')
 
@@ -430,6 +432,151 @@ function PainelMestre() {
         </aside>
       </div>
 
+      {/* ══ MOBILE CONTENT ══ */}
+        <div className="pm-mobile-content">
+
+          {/* ABA: JOGADORES */}
+          {abaMobile === 'jogadores' && (
+            <div className="pm-mobile-aba-content">
+              <div className="pm-mobile-secao-header">
+                <h2>Jogadores</h2>
+                <span className="pm-secao-count">{jogadores.length} personagem{jogadores.length !== 1 ? 's' : ''}</span>
+              </div>
+              {jogadores.length === 0 ? (
+                <div className="pm-vazio">
+                  <p>Nenhum jogador entrou ainda.</p>
+                  <p>Compartilhe o código <strong className="pm-codigo-destaque">{sessao?.codigo?.toUpperCase()}</strong></p>
+                </div>
+              ) : (
+                <div className="pm-grade">
+                  {jogadores.map(p => (
+                    <CardPersonagem key={p.id} personagem={p} mostrarJogador
+                      sessaoId={id}
+                      onMachucadosChange={atualizarMachucados}
+                      onRoll={masterRolar}
+                      onDeletar={deletarPersonagem}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ABA: NPCS */}
+          {abaMobile === 'npcs' && (
+            <div className="pm-mobile-aba-content">
+              <div className="pm-mobile-secao-header">
+                <h2>NPCs</h2>
+                <span className="pm-secao-count">{npcs.length} NPC{npcs.length !== 1 ? 's' : ''}</span>
+                <button className="pm-btn-criar-npc" onClick={() => setModalNPC(true)}>+ Criar NPC</button>
+                <button className="pm-btn-criar-npc" style={{ backgroundColor: '#111', borderColor: '#333', color: '#aaa' }}
+                  onClick={() => setModalFichaOffline(true)}>
+                  📄 Offline
+                </button>
+              </div>
+              {npcs.length === 0 ? (
+                <div className="pm-vazio pm-vazio-npc"><p>Nenhum NPC criado.</p></div>
+              ) : (
+                <div className="pm-grade">
+                  {npcs.map(p => (
+                    <CardPersonagem key={p.id} personagem={p} mostrarJogador={false}
+                      sessaoId={id}
+                      onMachucadosChange={atualizarMachucados}
+                      onRoll={masterRolar}
+                      onDeletar={deletarPersonagem}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ABA: DADOS */}
+          {abaMobile === 'dados' && (
+            <div className="pm-mobile-aba-content pm-mobile-dados">
+              <div className="pm-sidebar-secao-titulo">🎲 Rolar Dados</div>
+              <div className="pm-sidebar-input-area">
+                <input
+                  ref={masterRef}
+                  className="pm-sidebar-input"
+                  placeholder="1d20, 2d6+3, 1d20+5..."
+                  value={masterInput}
+                  onChange={e => setMasterInput(e.target.value)}
+                  onKeyDown={handleMasterKey}
+                />
+                <button className="pm-sidebar-input-btn" onClick={submitMasterDice}>
+                  <img src={dadoIcon} alt="rolar" style={{ width: 16, filter: 'invert(1)' }} />
+                </button>
+              </div>
+              <div className="pm-sidebar-secao-titulo" style={{ marginTop: 12 }}>
+                📜 Rolagens ao Vivo
+                {liveRolls.length > 0 && (
+                  <button className="pm-feed-limpar" onClick={() => setLiveRolls([])}>Limpar</button>
+                )}
+              </div>
+              <div className="pm-sidebar-feed" ref={feedRef}>
+                {liveRolls.length === 0
+                  ? <div className="pm-feed-vazio">As rolagens aparecerão aqui</div>
+                  : liveRolls.map(r => <FeedRoll key={r.id} roll={r} />)
+                }
+              </div>
+            </div>
+          )}
+
+          {/* ABA: CONFIG */}
+          {abaMobile === 'config' && (
+            <div className="pm-mobile-aba-content pm-mobile-config">
+              <div className="pm-settings-titulo">Configurações da Sessão</div>
+              <div className="pm-setting-item">
+                <div className="pm-setting-info">
+                  <span className="pm-setting-nome">Jogadores podem alterar machucados</span>
+                  <span className="pm-setting-desc">Jogadores podem aumentar e diminuir a própria barra de vida.</span>
+                </div>
+                <button
+                  className={`pm-toggle ${sessao?.jogadores_podem_alterar_machucados ? 'pm-toggle-on' : ''}`}
+                  onClick={() => salvarConfiguracao('jogadores_podem_alterar_machucados', !sessao?.jogadores_podem_alterar_machucados)}
+                >
+                  {sessao?.jogadores_podem_alterar_machucados ? 'Ativado' : 'Desativado'}
+                </button>
+              </div>
+              <div className="pm-setting-item">
+                <div className="pm-setting-info">
+                  <span className="pm-setting-nome">Jogadores podem editar a própria ficha</span>
+                  <span className="pm-setting-desc">Jogadores podem editar atributos, poderes e perícias.</span>
+                </div>
+                <button
+                  className={`pm-toggle ${sessao?.jogadores_podem_editar_ficha ? 'pm-toggle-on' : ''}`}
+                  onClick={() => salvarConfiguracao('jogadores_podem_editar_ficha', !sessao?.jogadores_podem_editar_ficha)}
+                >
+                  {sessao?.jogadores_podem_editar_ficha ? 'Ativado' : 'Desativado'}
+                </button>
+              </div>
+              <div className="pm-settings-nota">Mais configurações em breve (integração Owlbear, etc.)</div>
+            </div>
+          )}
+
+        </div>
+
+        {/* ══ BOTTOM TAB BAR ══ */}
+        <nav className="pm-mobile-tab-bar">
+          {[
+            { id: 'jogadores', icone: '⚔', label: 'Jogadores', count: jogadores.length },
+            { id: 'npcs',      icone: '👾', label: 'NPCs',      count: npcs.length      },
+            { id: 'dados',     icone: '🎲', label: 'Dados',     count: liveRolls.length },
+            { id: 'config',    icone: '⚙',  label: 'Config',    count: 0                },
+          ].map(tab => (
+            <button
+              key={tab.id}
+              className={`pm-mobile-tab ${abaMobile === tab.id ? 'ativa' : ''}`}
+              onClick={() => setAbaMobile(tab.id)}
+            >
+              {tab.count > 0 && <span className="pm-mobile-tab-badge">{tab.count > 9 ? '9+' : tab.count}</span>}
+              <span className="pm-mobile-tab-icone">{tab.icone}</span>
+              <span className="pm-mobile-tab-label">{tab.label}</span>
+            </button>
+          ))}
+        </nav>    
+      
       {/* MODAL NPC */}
       {modalNPC && (
         <ModalCriacaoNPC sessaoId={id} onFechar={() => setModalNPC(false)} onNPCCriado={onNPCCriado} />
