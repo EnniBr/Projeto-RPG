@@ -14,10 +14,6 @@ model Usuario {
   email String @unique
   senha          String? 
   google_id      String?  @unique 
-  email_verificado Boolean @default(false) 
-  token_verificacao String? 
-  token_reset_senha String? 
-  token_reset_expira DateTime?
 
   personagens    Personagem[]
   sessoes        Sessao[]
