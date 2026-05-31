@@ -225,3 +225,52 @@
   border-radius: 6px;
   margin: 0;
 }
+
+/* Botão Google */
+.modal-btn-google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px;
+  background-color: #fff;
+  color: #333;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+.modal-btn-google:hover { background-color: #f0f0f0; }
+
+/* Divisor "ou" */
+.modal-divisor {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #333;
+  font-size: 0.85rem;
+}
+.modal-divisor::before,
+.modal-divisor::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background-color: #222;
+}
+
+/* Link botão */
+.modal-link-btn {
+  background: none;
+  border: none;
+  color: #cc3333;
+  font-family: 'Crimson Pro', serif;
+  font-size: 0.85rem;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+  margin-top: 4px;
+}
+.modal-link-btn:hover { color: #ff4444; }

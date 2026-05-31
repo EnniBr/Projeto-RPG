@@ -8,6 +8,10 @@ import FichaPersonagem from './pages/FichaPersonagem.jsx'
 import RotaProtegida from './components/RotaProtegida.jsx'
 import CriacaoPersonagem from './pages/CriacaoPersonagem.jsx'
 import EditarPersonagem from './pages/EditarPersonagem.jsx'
+import VerificarEmail from './pages/VerificarEmail.jsx'
+import NovaSenha      from './pages/NovaSenha.jsx'
+import AuthCallback   from './pages/AuthCallback.jsx'
+
 
 function App() {
   const [modalAberto, setModalAberto] = useState(false)
