@@ -3,6 +3,7 @@ import api from '../services/api'
 import regrasV2 from '../data/regras_mm3e_v2.json'
 import './ModalCriacaoNPC.css'
 import PainelPoderShared from '../components/PainelPoderShared'
+import regras from '../data/regras_mm3e.json'
 
 const HABILIDADES = [
   { nome: 'Força',       chave: 'forca',       sigla: 'FOR' },

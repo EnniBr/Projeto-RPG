@@ -4,6 +4,7 @@ import api from '../services/api'
 import regrasV2 from '../data/regras_mm3e_v2.json'
 import './CriacaoPersonagem.css'
 import PainelPoderShared from '../components/PainelPoderShared'
+import regras from '../data/regras_mm3e.json'
 
 // ─── Constantes (igual CriacaoPersonagem) ─────────────────────────────────
 
