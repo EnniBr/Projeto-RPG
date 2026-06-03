@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import api from '../services/api'
 import regras from '../data/regras_mm3e.json'
 import './CriacaoPersonagem.css'
+import PainelPoderShared from '../components/PainelPoderShared'
 
 // ─── Constantes (igual CriacaoPersonagem) ─────────────────────────────────
 
@@ -552,7 +553,14 @@ function EditarPersonagem() {
               </div>
             )}
             {poderes.map(poder => (
-              <PainelPoderEditar key={poder.uid} poder={poder} np={np} ehNPC={ehNPC}
+              <PainelPoderShared
+                key={poder.uid}
+                poder={poder}
+                np={np}
+                ehNPC={tipoPersonagem === 'npc'} 
+                regrasV2={regrasV2}
+                extrasGenericos={regras.modificadores.extras}
+                falhasGenericas={regras.modificadores.falhas}
                 onRemove={() => removePoder(poder.uid)}
                 onUpdate={(f, v) => updatePoder(poder.uid, f, v)}
                 onSetEfeito={nome => setPoderEfeito(poder.uid, nome)}

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import api from '../services/api'
 import regras from '../data/regras_mm3e.json'
 import './ModalCriacaoNPC.css'
+import PainelPoderShared from '../components/PainelPoderShared'
 
 const HABILIDADES = [
   { nome: 'Força',       chave: 'forca',       sigla: 'FOR' },
@@ -361,12 +362,19 @@ function ModalCriacaoNPC({ sessaoId, onFechar, onNPCCriado, modoOffline = false,
               </div>
             )}
 
-            {poderes.map(p => (
-              <PainelPoderNPC key={p.uid} poder={p}
-                onRemove={() => removePoder(p.uid)}
-                onUpdate={(f, v) => updatePoder(p.uid, f, v)}
-                onSetEfeito={nome => setPoderEfeito(p.uid, nome)}
-                onToggleMod={(tipo, nome) => toggleMod(p.uid, tipo, nome)}
+            {poderes.map(poder => (
+              <PainelPoderShared
+                key={poder.uid}
+                poder={poder}
+                np={np}
+                ehNPC={true}
+                regrasV2={regrasV2}
+                extrasGenericos={regras.modificadores.extras}
+                falhasGenericas={regras.modificadores.falhas}
+                onRemove={() => removePoder(poder.uid)}
+                onUpdate={(f, v) => updatePoder(poder.uid, f, v)}
+                onSetEfeito={nome => setPoderEfeito(poder.uid, nome)}
+                onToggleMod={(tipo, nome) => togglePoderMod(poder.uid, tipo, nome)}
                 onSalvarNaBiblioteca={salvarPoderNaBiblioteca}
               />
             ))}

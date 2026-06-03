@@ -1,0 +1,156 @@
+.info-overlay {
+  position: fixed; inset: 0;
+  background-color: rgba(0,0,0,0.8);
+  backdrop-filter: blur(4px);
+  z-index: 300;
+}
+
+.info-modal {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 301;
+  background-color: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  width: 700px;
+  max-width: 96vw;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.8);
+  overflow: hidden;
+}
+
+.info-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 20px 24px 14px;
+  border-bottom: 1px solid #222;
+  flex-shrink: 0;
+  background-color: #111;
+}
+
+.info-titulo {
+  color: white;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.8rem;
+  letter-spacing: 2px;
+  margin: 0 0 8px;
+}
+
+.info-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.info-tag {
+  padding: 2px 8px;
+  background-color: #222;
+  border: 1px solid #333;
+  border-radius: 4px;
+  color: #aaa;
+  font-size: 0.75rem;
+  font-family: 'Crimson Pro', serif;
+}
+
+.info-tag-ataque   { border-color: #8b000066; color: #cc3333; background-color: #8b000011; }
+.info-tag-defesa   { border-color: #1a5e2066; color: #2ecc71; background-color: #1a5e2011; }
+.info-tag-controle { border-color: #1a3a6e66; color: #3498db; background-color: #1a3a6e11; }
+.info-tag-sensorial{ border-color: #5e4a1a66; color: #f39c12; background-color: #5e4a1a11; }
+.info-tag-movimento{ border-color: #3a1a6e66; color: #9b59b6; background-color: #3a1a6e11; }
+.info-tag-geral    { border-color: #33333366; color: #aaa;    background-color: #22222211; }
+
+.info-fechar {
+  background: none; border: 1px solid #333; color: #aaa;
+  width: 32px; height: 32px; border-radius: 50%;
+  cursor: pointer; font-size: 0.85rem;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s; flex-shrink: 0;
+}
+.info-fechar:hover { background-color: #8b0000; border-color: #8b0000; color: white; }
+
+.info-corpo {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.info-corpo::-webkit-scrollbar { width: 4px; }
+.info-corpo::-webkit-scrollbar-thumb { background-color: #333; border-radius: 2px; }
+
+.info-secao { display: flex; flex-direction: column; gap: 10px; }
+
+.info-secao-titulo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 0.85rem;
+  letter-spacing: 2px;
+  color: #555;
+  text-transform: uppercase;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #1a1a1a;
+}
+
+.info-texto {
+  color: #ccc;
+  font-family: 'Crimson Pro', serif;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+.info-mod-item {
+  background-color: #111;
+  border-radius: 6px;
+  padding: 10px 14px;
+  border-left: 3px solid #333;
+}
+
+.info-mod-extra { border-left-color: #1a5e20; }
+.info-mod-falha { border-left-color: #6e1a1a; }
+
+.info-mod-nome {
+  color: white;
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 2px;
+}
+
+.info-mod-custo {
+  color: #cc3333;
+  font-size: 0.8rem;
+  font-family: 'Crimson Pro', serif;
+  margin-bottom: 4px;
+}
+
+.info-mod-desc {
+  color: #888;
+  font-family: 'Crimson Pro', serif;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.info-texto-integra {
+  font-family: 'Crimson Pro', serif;
+  font-size: 0.85rem;
+  color: #666;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+  background-color: #0d0d0d;
+  border: 1px solid #1a1a1a;
+  border-radius: 6px;
+  padding: 14px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+@media (max-width: 768px) {
+  .info-modal { max-height: 95vh; width: 96vw; }
+  .info-corpo { padding: 14px 16px; }
+}

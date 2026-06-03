@@ -4,6 +4,7 @@ import { useSessao } from '../contexts/SessaoContext'
 import api from '../services/api'
 import regras from '../data/regras_mm3e.json'
 import './CriacaoPersonagem.css'
+import PainelPoderShared from '../components/PainelPoderShared'
 
 const HABILIDADES = [
   { nome: 'Força',       chave: 'forca',       sigla: 'FOR', desc: 'Poder físico bruto' },
@@ -540,14 +541,21 @@ function CriacaoPersonagem() {
               </p>
             )}
             {poderes.map(poder => (
-              <PainelPoder key={poder.uid} poder={poder} np={np} ppRestante={ppRestante}
-                onRemove={() => removePoder(poder.uid)}
-                onUpdate={(f, v) => updatePoder(poder.uid, f, v)}
-                onSetEfeito={nome => setPoderEfeito(poder.uid, nome)}
-                onToggleMod={(tipo, nome) => togglePoderMod(poder.uid, tipo, nome)}
-                onSalvarNaBiblioteca={salvarPoderNaBiblioteca}
-              />
-            ))}
+                <PainelPoderShared
+                  key={poder.uid}
+                  poder={poder}
+                  np={np}
+                  ehNPC={false}
+                  regrasV2={regrasV2}
+                  extrasGenericos={regras.modificadores.extras}
+                  falhasGenericas={regras.modificadores.falhas}
+                  onRemove={() => removePoder(poder.uid)}
+                  onUpdate={(f, v) => updatePoder(poder.uid, f, v)}
+                  onSetEfeito={nome => setPoderEfeito(poder.uid, nome)}
+                  onToggleMod={(tipo, nome) => togglePoderMod(poder.uid, tipo, nome)}
+                  onSalvarNaBiblioteca={salvarPoderNaBiblioteca}
+                />
+              ))}
             <button className="cria-btn-adicionar-poder" onClick={addPoder}>+ Adicionar Poder</button>
           </div>
         </section>
