@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import api from '../services/api'
-import regras from '../data/regras_mm3e.json'
+import regrasV2 from '../data/regras_mm3e_v2.json'
 import './CriacaoPersonagem.css'
 import PainelPoderShared from '../components/PainelPoderShared'
 
