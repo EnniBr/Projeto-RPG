@@ -7,7 +7,7 @@ async function exportarCSV(req, res) {
 
     const registros = await prisma.sessaoPersonagem.findMany({
       where: { sessao_id: sessaoId },
-      include: { personagem: true }  // atributos agora estão no próprio personagem
+      include: { personagem: true } 
     })
 
     const cabecalho = [
