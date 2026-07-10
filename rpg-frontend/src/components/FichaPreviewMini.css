@@ -1,0 +1,196 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap');
+
+.prev-card {
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: #0a0a0a;
+  border: 1px solid #222;
+  color: white;
+  font-family: 'Crimson Pro', serif;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+}
+
+/* ── Cabeçalho com foto de fundo ── */
+.prev-bg {
+  position: relative;
+  width: 100%;
+  height: 190px;
+  overflow: hidden;
+  background-color: #111;
+}
+
+.prev-bg-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.prev-bg-vazia {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.2rem;
+  opacity: 0.25;
+  background: radial-gradient(circle at 50% 30%, #1a1a1a 0%, #0a0a0a 70%);
+}
+
+.prev-bg-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(10,10,10,0.35) 0%, rgba(10,10,10,0.25) 40%, rgba(10,10,10,0.92) 100%);
+  pointer-events: none;
+}
+
+.prev-bg-topo {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.prev-tipo-badge {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 0.68rem;
+  letter-spacing: 1.5px;
+  color: #8ec9ff;
+  background-color: #1a3a5511;
+  border: 1px solid #2c5c8844;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+.prev-tipo-npc { color: #f1c40f; background-color: #f1c40f11; border-color: #f1c40f44; }
+
+.prev-np-badge {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 1px;
+  color: #cc3333;
+  background-color: #8b000022;
+  border: 1px solid #8b000066;
+  padding: 2px 9px;
+  border-radius: 4px;
+}
+
+.prev-bg-rodape {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 10px;
+}
+
+.prev-nome {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.5rem;
+  letter-spacing: 1.5px;
+  color: white;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.9);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Corpo ── */
+.prev-corpo {
+  padding: 14px 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.prev-hab-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.prev-hab-cel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  background-color: #111;
+  border: 1px solid #1e1e1e;
+  border-radius: 6px;
+  padding: 6px 2px;
+}
+
+.prev-hab-sigla { font-family: 'Bebas Neue', sans-serif; font-size: 0.68rem; letter-spacing: 1px; color: #777; }
+.prev-hab-valor { font-family: 'Bebas Neue', sans-serif; font-size: 1.15rem; color: white; }
+
+.prev-def-linha {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  font-size: 0.75rem;
+  color: #888;
+  border-top: 1px solid #1a1a1a;
+  border-bottom: 1px solid #1a1a1a;
+  padding: 8px 0;
+}
+.prev-def-linha strong { color: #cc3333; font-family: 'Bebas Neue', sans-serif; font-weight: normal; letter-spacing: 0.5px; }
+
+.prev-secao { display: flex; flex-direction: column; gap: 4px; }
+
+.prev-secao-titulo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 0.78rem;
+  letter-spacing: 2px;
+  color: #cc3333;
+  border-bottom: 1px solid #8b000033;
+  padding-bottom: 3px;
+}
+
+.prev-linha {
+  margin: 0;
+  font-size: 0.83rem;
+  color: #ccc;
+  line-height: 1.45;
+}
+.prev-linha strong { color: white; }
+
+.prev-vazio {
+  margin: 0;
+  font-size: 0.78rem;
+  color: #555;
+  font-style: italic;
+  line-height: 1.4;
+}
+
+.prev-pericias-lista {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.prev-pericia-chip {
+  font-size: 0.75rem;
+  color: #aaa;
+  background-color: #111;
+  border: 1px solid #1e1e1e;
+  border-radius: 4px;
+  padding: 3px 8px;
+}
+.prev-pericia-chip strong { color: #cc3333; font-weight: 600; margin-left: 2px; }
+
+.prev-citacao {
+  margin-top: 2px;
+  padding: 10px 12px;
+  border-left: 3px solid #8b0000;
+  background-color: rgba(255,255,255,0.02);
+  font-style: italic;
+  color: #999;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  border-radius: 0 6px 6px 0;
+}
+
+@media (max-width: 768px) {
+  .prev-bg { height: 220px; }
+}
