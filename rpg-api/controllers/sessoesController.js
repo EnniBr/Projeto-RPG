@@ -126,7 +126,9 @@ async function meuPersonagemNaSessao(req, res) {
         res.json({
             personagem,
             configuracoes: {
-                jogadores_podem_alterar_machucados: sessaoAtual?.jogadores_podem_alterar_machucados ?? false
+                jogadores_podem_alterar_machucados: sessaoAtual?.jogadores_podem_alterar_machucados ?? false,
+                jogadores_podem_editar_ficha:       sessaoAtual?.jogadores_podem_editar_ficha ?? false,
+                jogadores_podem_personalizar_ficha: sessaoAtual?.jogadores_podem_personalizar_ficha ?? false,
             }
         })
     } catch (erro) {
@@ -183,6 +185,9 @@ async function atualizarConfiguracoesSessao(req, res) {
         if (typeof req.body.jogadores_podem_editar_ficha === 'boolean') {
         dados.jogadores_podem_editar_ficha = req.body.jogadores_podem_editar_ficha
         }
+        if (typeof req.body.jogadores_podem_personalizar_ficha === 'boolean') {
+        dados.jogadores_podem_personalizar_ficha = req.body.jogadores_podem_personalizar_ficha
+        }
 
         if (Object.keys(dados).length === 0) {
             return res.status(400).json({ mensagem: 'Nenhuma configuração enviada' })
@@ -195,6 +200,7 @@ async function atualizarConfiguracoesSessao(req, res) {
             getIO().to(`sessao-${id}`).emit('settings-update', {
                 jogadores_podem_alterar_machucados: atualizada.jogadores_podem_alterar_machucados,
                 jogadores_podem_editar_ficha:       atualizada.jogadores_podem_editar_ficha,
+                jogadores_podem_personalizar_ficha: atualizada.jogadores_podem_personalizar_ficha,
             })
         } catch (socketErr) {
             console.log('Socket.io warning em configuracoes:', socketErr.message)

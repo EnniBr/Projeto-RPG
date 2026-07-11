@@ -299,6 +299,52 @@ async function atualizarImagemPosicao(req, res) {
     }
 }
 
+// ─── Atualizar aparência (cores + tema dos blocos) ───────────────────────────
+// Body: { cor_primaria: '#8b0000', cor_secundaria: '#cccccc', tema_blocos: 'escuro' }
+// Regras: o mestre da sessão sempre pode; o dono do personagem só pode se a
+// sessão tiver liberado jogadores_podem_personalizar_ficha.
+async function atualizarAparencia(req, res) {
+    try {
+        const id = Number(req.params.id)
+        const { cor_primaria, cor_secundaria, tema_blocos } = req.body
+
+        const personagemAtual = await prisma.personagem.findUnique({ where: { id } })
+        if (!personagemAtual) return res.status(404).json({ mensagem: 'Personagem não encontrado' })
+
+        const vinculo = await prisma.sessaoPersonagem.findFirst({
+            where: { personagem_id: id },
+            include: { sessao: true }
+        })
+
+        const souDono  = personagemAtual.usuario_id === req.usuario.id
+        const souMestre = vinculo?.sessao.mestre_id === req.usuario.id
+
+        if (!souMestre) {
+            if (!souDono) {
+                return res.status(403).json({ mensagem: 'Sem permissão para alterar esta ficha' })
+            }
+            if (!vinculo?.sessao.jogadores_podem_personalizar_ficha) {
+                return res.status(403).json({ mensagem: 'O mestre não liberou a personalização da ficha' })
+            }
+        }
+
+        const dados = {}
+        if (typeof cor_primaria === 'string')   dados.cor_primaria = cor_primaria
+        if (typeof cor_secundaria === 'string') dados.cor_secundaria = cor_secundaria
+        if (tema_blocos === 'claro' || tema_blocos === 'escuro') dados.tema_blocos = tema_blocos
+
+        if (Object.keys(dados).length === 0) {
+            return res.status(400).json({ mensagem: 'Nenhum campo de aparência enviado' })
+        }
+
+        const personagem = await prisma.personagem.update({ where: { id }, data: dados })
+        res.json(personagem)
+    } catch (erro) {
+        console.error('Erro ao atualizar aparência:', erro)
+        res.status(500).json({ mensagem: 'Erro interno', erro: erro.message })
+    }
+}
+
 module.exports = {
     listarPersonagens,
     criarPersonagens,
@@ -309,4 +355,5 @@ module.exports = {
     buscarPersonagemCompleto,
     atualizarMachucados,
     atualizarImagemPosicao,
+    atualizarAparencia,
 }

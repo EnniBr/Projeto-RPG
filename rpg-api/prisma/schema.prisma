@@ -97,8 +97,9 @@ model Sessao {
   codigo      String   @unique @default(cuid())
   mestre_id   Int
 
-  jogadores_podem_alterar_machucados Boolean @default(false)
-  jogadores_podem_editar_ficha       Boolean @default(false)
+  jogadores_podem_alterar_machucados  Boolean @default(false)
+  jogadores_podem_editar_ficha        Boolean @default(false)
+  jogadores_podem_personalizar_ficha  Boolean @default(false)
 
   mestre      Usuario          @relation(fields: [mestre_id], references: [id])
   personagens SessaoPersonagem[]

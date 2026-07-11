@@ -178,6 +178,89 @@ html, body, #root { height: 100%; margin: 0; }
 
 .ficha-zoom-ctrl button:hover { color: var(--cor-primaria); }
 
+/* ── DROPDOWN DA ENGRENAGEM (editar + personalização) ───── */
+.ficha-gear-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 20;
+  width: 260px;
+  background-color: #0f0f0f;
+  border: 1px solid #2a2a2a;
+  border-radius: 10px;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.5);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ficha-gear-item {
+  text-align: left;
+  padding: 9px 12px;
+  background-color: #161616;
+  border: 1px solid #262626;
+  border-radius: 6px;
+  color: #ddd;
+  font-family: 'Crimson Pro', serif;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.ficha-gear-item:hover { border-color: var(--cor-primaria); color: var(--cor-primaria); }
+
+.ficha-gear-divisor { height: 1px; background-color: #262626; margin: 2px 0; }
+
+.ficha-gear-titulo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 0.85rem;
+  letter-spacing: 1.5px;
+  color: #999;
+  padding: 0 2px;
+}
+
+.ficha-gear-cores {
+  display: flex;
+  gap: 10px;
+}
+.ficha-gear-cores label {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-family: 'Crimson Pro', serif;
+  font-size: 0.72rem;
+  color: #888;
+}
+.ficha-gear-cores input[type="color"] {
+  width: 100%;
+  height: 36px;
+  padding: 2px;
+  border-radius: 6px;
+  border: 1px solid #333;
+  background-color: #0a0a0a;
+  cursor: pointer;
+}
+.ficha-gear-cores input[type="color"]::-webkit-color-swatch-wrapper { padding: 2px; }
+.ficha-gear-cores input[type="color"]::-webkit-color-swatch { border: none; border-radius: 4px; }
+
+.ficha-gear-tema { display: flex; gap: 8px; }
+.ficha-gear-tema .ficha-btn-ghost { flex: 1; justify-content: center; }
+
+.ficha-gear-salvar {
+  padding: 9px;
+  background-color: var(--cor-primaria);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-family: 'Crimson Pro', serif;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.ficha-gear-salvar:disabled { opacity: 0.5; cursor: not-allowed; }
+
 /* ── CITAÇÃO ─────────────────────────────────────────────── */
 .ficha-citacao {
   margin-top: 4px;
@@ -233,12 +316,20 @@ html, body, #root { height: 100%; margin: 0; }
 .ficha-tema-claro .secao-titulo { color: white; }
 .ficha-tema-claro .atr-valor,
 .ficha-tema-claro .per-nome,
+.ficha-tema-claro .per-temp,
 .ficha-tema-claro .def-nome,
 .ficha-tema-claro .def-valor,
+.ficha-tema-claro .ofensivo-iniciativa,
+.ficha-tema-claro .ofensivo-linha,
 .ficha-tema-claro .ofensivo-poder-nome { color: #222; }
 .ficha-tema-claro .pericias-lista { background-color: rgba(255,255,255,0.9); }
 .ficha-tema-claro .pericia-linha { color: #333; border-bottom-color: rgba(0,0,0,0.08); }
 .ficha-tema-claro .caixa-atributo { background-color: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.1); }
+
+/* Especificidade mais alta que ".pericia-treinada .per-nome" do modo escuro,
+   senão a regra escura (mesma especificidade, declarada depois) prevalecia */
+.ficha-tema-claro .pericia-treinada { background-color: rgba(139,0,0,0.08); }
+.ficha-tema-claro .pericia-treinada .per-nome { color: #1a1a1a; }
 
 /* ── ATRIBUTOS ──────────────────────────────────────────── */
 .grid-atributos {

@@ -205,9 +205,14 @@ function FichaPersonagem() {
   const [machucados,        setMachucados]         = useState(0)
   const [rolls,             setRolls]              = useState([])
   const [diceInput,         setDiceInput]          = useState('')
-  const [jogsPodemAlterar,  setJogsPodemAlterar]  = useState(false)
-  const [jogsPodeEditar,    setJogsPodeEditar]     = useState(false)
-  const [uploadandoFoto,    setUploadandoFoto]     = useState(false)
+  const [jogsPodemAlterar,      setJogsPodemAlterar]      = useState(false)
+  const [jogsPodeEditar,        setJogsPodeEditar]        = useState(false)
+  const [jogsPodePersonalizar,  setJogsPodePersonalizar]  = useState(false)
+  const [uploadandoFoto,        setUploadandoFoto]        = useState(false)
+
+  // Painel de aparência (engrenagem)
+  const [painelAberto,   setPainelAberto]   = useState(false)
+  const [salvandoAparencia, setSalvandoAparencia] = useState(false)
 
   // Controle da imagem de fundo
   const [imgPos,   setImgPos]   = useState({ x: 50, y: 20, zoom: 1.0 })
@@ -238,6 +243,7 @@ function FichaPersonagem() {
           setMachucados(dados.machucados ?? 0)
           if (dados.imagem_posicao) setImgPos(dados.imagem_posicao)
           setJogsPodemAlterar(true)
+          setJogsPodePersonalizar(true)
           return
         }
 
@@ -250,6 +256,7 @@ function FichaPersonagem() {
         if (resp.data.configuracoes) {
           setJogsPodemAlterar(resp.data.configuracoes.jogadores_podem_alterar_machucados ?? false)
           setJogsPodeEditar(resp.data.configuracoes.jogadores_podem_editar_ficha ?? false)
+          setJogsPodePersonalizar(resp.data.configuracoes.jogadores_podem_personalizar_ficha ?? false)
         }
       } catch (e) {
         console.error('Erro ao carregar ficha:', e)
@@ -270,9 +277,10 @@ function FichaPersonagem() {
     socket.on('machucados-update', ({ personagemId, machucados }) => {
       if (personagemId === personagem.id) setMachucados(machucados)
     })
-    socket.on('settings-update', ({ jogadores_podem_alterar_machucados, jogadores_podem_editar_ficha }) => {
+    socket.on('settings-update', ({ jogadores_podem_alterar_machucados, jogadores_podem_editar_ficha, jogadores_podem_personalizar_ficha }) => {
       setJogsPodemAlterar(jogadores_podem_alterar_machucados)
       setJogsPodeEditar(jogadores_podem_editar_ficha)
+      setJogsPodePersonalizar(jogadores_podem_personalizar_ficha)
     })
     return () => { socket.off('machucados-update'); socket.off('settings-update') }
   }, [socket, id, personagem])
@@ -392,6 +400,28 @@ function FichaPersonagem() {
     finally { setUploadandoFoto(false) }
   }
 
+  // ─── Aparência (cor primária/secundária + tema dos blocos) ────────────────
+
+  function mudarAparenciaLocal(campo, valor) {
+    setPersonagem(prev => ({ ...prev, [campo]: valor }))
+  }
+
+  async function salvarAparencia() {
+    if (!personagem) return
+    setSalvandoAparencia(true)
+    try {
+      await api.patch(`/personagens/${personagem.id}/aparencia`, {
+        cor_primaria:   personagem.cor_primaria,
+        cor_secundaria: personagem.cor_secundaria,
+        tema_blocos:    personagem.tema_blocos,
+      })
+    } catch (e) {
+      console.error('Erro ao salvar aparência:', e)
+    } finally {
+      setSalvandoAparencia(false)
+    }
+  }
+
   // ─── Perícias parseadas ───────────────────────────────────────────────────
 
   function rolarPericia(nome, bonus) {
@@ -488,14 +518,63 @@ function FichaPersonagem() {
             ].filter(Boolean).join(' · ') || (sessao?.nome ?? '')}
           </span>
         </div>
-        <div className="ficha-topo-dir">
+        <div className="ficha-topo-dir" style={{ position: 'relative' }}>
           <span className="ficha-np-badge">NP {np}</span>
-          {(personagemIdParam || (ehMeuChar && jogsPodeEditar)) && (
-            <button className="ficha-btn-ghost"
-              onClick={() => window.open(`/sessao/${id}/editar-personagem/${p.id}`, '_blank')}>
-              ✏ Editar
+
+          {(personagemIdParam || (ehMeuChar && (jogsPodeEditar || jogsPodePersonalizar))) && (
+            <button
+              className={`ficha-btn-ghost ${painelAberto ? 'ficha-btn-ativo' : ''}`}
+              onClick={() => setPainelAberto(a => !a)}
+              title="Editar e personalizar ficha"
+            >
+              ⚙
             </button>
           )}
+
+          {painelAberto && (
+            <div className="ficha-gear-dropdown">
+              {(personagemIdParam || (ehMeuChar && jogsPodeEditar)) && (
+                <button className="ficha-gear-item"
+                  onClick={() => { window.open(`/sessao/${id}/editar-personagem/${p.id}`, '_blank'); setPainelAberto(false) }}>
+                  ✏️ Editar ficha completa
+                </button>
+              )}
+
+              {(personagemIdParam || (ehMeuChar && jogsPodePersonalizar)) && (
+                <>
+                  <div className="ficha-gear-divisor" />
+                  <div className="ficha-gear-titulo">🎨 Personalizar aparência</div>
+
+                  <div className="ficha-gear-cores">
+                    <label>
+                      <span>Cor primária</span>
+                      <input type="color" value={p.cor_primaria || '#8b0000'}
+                        onChange={e => mudarAparenciaLocal('cor_primaria', e.target.value)} />
+                    </label>
+                    <label>
+                      <span>Cor secundária</span>
+                      <input type="color" value={p.cor_secundaria || '#cccccc'}
+                        onChange={e => mudarAparenciaLocal('cor_secundaria', e.target.value)} />
+                    </label>
+                  </div>
+
+                  <div className="ficha-gear-tema">
+                    <button
+                      className={`ficha-btn-ghost ${(p.tema_blocos ?? 'escuro') === 'escuro' ? 'ficha-btn-ativo' : ''}`}
+                      onClick={() => mudarAparenciaLocal('tema_blocos', 'escuro')}>🌙 Escuro</button>
+                    <button
+                      className={`ficha-btn-ghost ${p.tema_blocos === 'claro' ? 'ficha-btn-ativo' : ''}`}
+                      onClick={() => mudarAparenciaLocal('tema_blocos', 'claro')}>☀️ Claro</button>
+                  </div>
+
+                  <button className="ficha-gear-salvar" onClick={salvarAparencia} disabled={salvandoAparencia}>
+                    {salvandoAparencia ? 'Salvando...' : '💾 Salvar aparência'}
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+
           {ehMeuChar && (
             <>
               <button
