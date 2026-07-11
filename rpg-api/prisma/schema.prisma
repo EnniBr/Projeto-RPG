@@ -22,6 +22,8 @@ model Usuario {
 // ─── Personagem — modelo central, simplificado ────────────────────────────────
 // Removido: pontos_poder_gastos, relações com Atributo/Poder/Pericia/Vantagem/Complicacao
 // Adicionado: campos de texto livre + defesas estruturadas + metadados de imagem
+// Adicionado (nesta rodada): identidade civil (nome_civil/cidade/equipe) e
+// aparência customizável da ficha (cor_primaria/cor_secundaria/tema_blocos)
 model Personagem {
   id               Int     @id @default(autoincrement())
   nome             String
@@ -32,6 +34,11 @@ model Personagem {
 
   usuario_id Int
   usuario    Usuario @relation(fields: [usuario_id], references: [id])
+
+  // Identidade — mostrados no cabeçalho da ficha (nome de herói já existe em `nome`)
+  nome_civil String? // nome verdadeiro/comum, ex: "Ricardo Alves"
+  cidade     String? // cidade/origem, ex: "São Paulo"
+  equipe     String? // equipe/afiliação, ex: "Vingadores"
 
   // Defesas estruturadas — o sistema usa em combate (Painel do Mestre, rolagens)
   esquiva      Int @default(0)
@@ -63,6 +70,11 @@ model Personagem {
   // a partir de pericias_texto para permitir rolagens no Painel do Mestre
   // Formato: [{"nome": "Atletismo", "bonus": 6}, {"nome": "Tecnologia", "bonus": 17}]
   pericias_parsed Json? @default("[]")
+
+  // Aparência da ficha — escolhida pelo jogador na criação/edição
+  cor_primaria   String? @default("#8b0000") // fundo do cabeçalho + títulos dos blocos
+  cor_secundaria String? @default("#cccccc") // cor do texto dentro dos blocos
+  tema_blocos    String? @default("escuro")  // 'escuro' ou 'claro' — fundo dos blocos
 
   // Metadados da imagem de fundo — controle de posição e zoom
   // Formato: {"x": 50, "y": 30, "zoom": 1.2}
