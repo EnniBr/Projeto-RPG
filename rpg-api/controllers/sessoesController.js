@@ -120,24 +120,11 @@ async function meuPersonagemNaSessao(req, res) {
 
         if (!vinculo) return res.json({ personagem: null })
 
-        const pid = vinculo.personagem_id
-
-        const [personagem, atributo, pericias, vantagens, personagemPoderes, complicacoes] = await Promise.all([
-            prisma.personagem.findUnique({ where: { id: pid } }),
-            prisma.atributo.findFirst({ where: { personagem_id: pid } }),
-            prisma.personagemPericia.findMany({ where: { personagem_id: pid } }),
-            prisma.personagemVantagem.findMany({ where: { personagem_id: pid } }),
-            prisma.personagemPoder.findMany({
-                where: { personagem_id: pid },
-                include: { poder: true }
-            }),
-            prisma.personagemComplicacao.findMany({ where: { personagem_id: pid } })  // novo
-        ])
-
-        const sessaoAtual = await prisma.sessao.findUnique({ where: { id: Number(req.params.id) } })
+        const personagem   = await prisma.personagem.findUnique({ where: { id: vinculo.personagem_id } })
+        const sessaoAtual   = await prisma.sessao.findUnique({ where: { id: Number(req.params.id) } })
 
         res.json({
-            personagem: { ...personagem, atributo, pericias, vantagens, poderes: personagemPoderes.map(pp => pp.poder), complicacoes },
+            personagem,
             configuracoes: {
                 jogadores_podem_alterar_machucados: sessaoAtual?.jogadores_podem_alterar_machucados ?? false
             }
@@ -164,24 +151,11 @@ async function personagensDaSessao(req, res) {
 
         const personagens = await Promise.all(
             vinculos.map(async v => {
-                const pid = v.personagem_id
-                const [personagem, atributo, pericias, vantagens, pPoderes, complicacoes] = await Promise.all([
-                    prisma.personagem.findUnique({ where: { id: pid }, include: { usuario: true } }),
-                    prisma.atributo.findFirst({ where: { personagem_id: pid } }),
-                    prisma.personagemPericia.findMany({ where: { personagem_id: pid } }),
-                    prisma.personagemVantagem.findMany({ where: { personagem_id: pid } }),
-                    prisma.personagemPoder.findMany({ where: { personagem_id: pid }, include: { poder: true } }),
-                    prisma.personagemComplicacao.findMany({ where: { personagem_id: pid } }),
-                ])
-                return {
-                    ...personagem,
-                    atributo,
-                    pericias,
-                    vantagens,
-                    poderes: pPoderes.map(pp => pp.poder),
-                    complicacoes,
-                    emCena: v.em_cena,
-                }
+                const personagem = await prisma.personagem.findUnique({
+                    where: { id: v.personagem_id },
+                    include: { usuario: true }
+                })
+                return { ...personagem, emCena: v.em_cena }
             })
         )
 
@@ -245,56 +219,4 @@ async function buscarSessao(req, res) {
     }
 }
 
-async function editarPersonagemCompleto(req, res) {
-  try {
-    const id = Number(req.params.id)
-    const { nome, atributos, pericias = [], vantagens = [], poderes = [], complicacoes = [] } = req.body
-
-    await prisma.$transaction(async (tx) => {
-      await tx.personagem.update({ where: { id }, data: { nome } })
-
-      await tx.atributo.updateMany({ where: { personagem_id: id }, data: atributos })
-
-      await tx.personagemPericia.deleteMany({ where: { personagem_id: id } })
-      for (const p of pericias) {
-        await tx.personagemPericia.create({ data: { nome_pericia: p.nome_pericia, graduacoes: p.graduacoes, personagem_id: id } })
-      }
-
-      await tx.personagemVantagem.deleteMany({ where: { personagem_id: id } })
-      for (const v of vantagens) {
-        await tx.personagemVantagem.create({ data: { nome_vantagem: v.nome_vantagem, graduacoes: v.graduacoes, personagem_id: id } })
-      }
-
-      await tx.personagemPoder.deleteMany({ where: { personagem_id: id } })
-      for (const poder of poderes) {
-        const poderCriado = await tx.poder.create({
-          data: {
-            nome:        poder.nome || poder.efeito_base,
-            efeito_base: poder.efeito_base,
-            graduacoes:  poder.graduacoes,
-            custo_total: poder.custo_total,
-            extras:      JSON.stringify(poder.extras || []),
-            falhas:      JSON.stringify(poder.falhas || []),
-            descritores: poder.descritores || '',
-            criador_id:  req.usuario.id,
-          }
-        })
-        await tx.personagemPoder.create({ data: { personagem_id: id, poder_id: poderCriado.id } })
-      }
-
-      await tx.personagemComplicacao.deleteMany({ where: { personagem_id: id } })
-      for (const c of complicacoes) {
-        await tx.personagemComplicacao.create({
-          data: { titulo: c.titulo.substring(0, 60), descricao: c.descricao.substring(0, 280), personagem_id: id }
-        })
-      }
-    })
-
-    res.json({ mensagem: 'Personagem atualizado com sucesso' })
-  } catch (erro) {
-    console.error('Erro ao editar personagem:', erro)
-    res.status(500).json({ mensagem: 'Erro interno', erro: erro.message })
-  }
-}
-
-module.exports = { listarSessoes, buscarSessao, criarSessoes, atualizarSessoes, deletarSessoes, entrarPorCodigo, meuPersonagemNaSessao, personagensDaSessao, atualizarConfiguracoesSessao, editarPersonagemCompleto }
+module.exports = { listarSessoes, buscarSessao, criarSessoes, atualizarSessoes, deletarSessoes, entrarPorCodigo, meuPersonagemNaSessao, personagensDaSessao, atualizarConfiguracoesSessao }
