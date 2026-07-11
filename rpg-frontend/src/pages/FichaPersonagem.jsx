@@ -29,6 +29,25 @@ const ATRIBUTOS = [
   { sigla: 'INT', chave: 'intelecto'   },
   { sigla: 'PRE', chave: 'presenca'    },
 ]
+const PERICIAS_FIXAS = [
+  { nome: 'Acrobacia',       chave: 'agilidade',   soTreinado: false },
+  { nome: 'Atletismo',       chave: 'forca',       soTreinado: false },
+  { nome: 'Enganação',       chave: 'presenca',    soTreinado: false },
+  { nome: 'Furtividade',     chave: 'agilidade',   soTreinado: false },
+  { nome: 'Intimidação',     chave: 'presenca',    soTreinado: false },
+  { nome: 'Intuição',        chave: 'consciencia', soTreinado: false },
+  { nome: 'Investigação',    chave: 'intelecto',   soTreinado: true  },
+  { nome: 'Percepção',       chave: 'consciencia', soTreinado: false },
+  { nome: 'Persuasão',       chave: 'presenca',    soTreinado: false },
+  { nome: 'Prestidigitação', chave: 'destreza',    soTreinado: false },
+  { nome: 'Tecnologia',      chave: 'intelecto',   soTreinado: true  },
+  { nome: 'Tratamento',      chave: 'intelecto',   soTreinado: true  },
+  { nome: 'Veículos',        chave: 'destreza',    soTreinado: false },
+]
+
+function normalizarNomePericia(str) {
+  return (str || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
+}
 
 // ─── Parser de dados ────────────────────────────────────────────────────────
 
@@ -313,7 +332,6 @@ function FichaPersonagem() {
   const np   = sessao?.nivel_poder ?? '?'
   const pericias_parsed = Array.isArray(p.pericias_parsed) ? p.pericias_parsed : []
 
-  // Props compartilhadas
   const propsMach = { machucados, pct, statusAtual, jogsPodemAlterar, alterarMachucados }
   const propsDados = {
     personagem: p, rolarNotacao, notacaoMod,
@@ -428,7 +446,7 @@ function FichaPersonagem() {
 
         {/* COLUNA 2 — perícias + machucados */}
         <div className="ficha-coluna" id="ficha-col2">
-          <SecaoPericias pericias={pericias_parsed} rolarPericia={rolarPericia} dadoIcon={dadoIcon} />
+          <SecaoPericias personagem={p} pericias={pericias_parsed} rolarPericia={rolarPericia} dadoIcon={dadoIcon} />
           <SecaoMachucados {...propsMach} />
         </div>
 
@@ -468,7 +486,7 @@ function FichaPersonagem() {
 
         {abaMobile === 'pericias' && (
           <div className="mobile-aba-content">
-            <SecaoPericias pericias={pericias_parsed} rolarPericia={rolarPericia} dadoIcon={dadoIcon} />
+            <SecaoPericias personagem={p} pericias={pericias_parsed} rolarPericia={rolarPericia} dadoIcon={dadoIcon} />
           </div>
         )}
 
@@ -515,7 +533,6 @@ function SecaoTexto({ titulo, texto }) {
   if (!texto?.trim()) return null
 
   function renderLinha(linha, i) {
-    // Suporte a **negrito**
     const partes = linha.split(/\*\*([^*]+)\*\*/)
     return (
       <p key={i} style={{ margin: '2px 0', paddingLeft: linha.startsWith('  ') ? 12 : 0 }}>
@@ -617,17 +634,29 @@ function SecaoDefensivo({ personagem: p, resistenciaTotal, dadoIcon, rolarNotaca
 
 // ─── Perícias ─────────────────────────────────────────────────────────────────
 
-function SecaoPericias({ pericias, rolarPericia, dadoIcon }) {
-  if (!pericias || pericias.length === 0) return (
-    <div className="secao">
-      <div className="secao-titulo" style={{ textAlign: 'center' }}>PERÍCIAS</div>
-      <div className="secao-conteudo">
-        <p style={{ color: '#555', fontStyle: 'italic', fontSize: '0.85rem' }}>
-          As perícias aparecerão aqui após salvar a ficha com o campo de perícias preenchido.
-        </p>
-      </div>
-    </div>
-  )
+function SecaoPericias({ personagem, pericias, rolarPericia, dadoIcon }) {
+  const p = personagem ?? {}
+
+  const digitadas = new Map()
+  ;(pericias || []).forEach(item => {
+    if (item?.nome) digitadas.set(normalizarNomePericia(item.nome), item)
+  })
+
+  const linhasFixas = PERICIAS_FIXAS.map(({ nome, chave, soTreinado }) => {
+    const chaveNorm = normalizarNomePericia(nome)
+    const digitada  = digitadas.get(chaveNorm)
+    if (digitada) {
+      digitadas.delete(chaveNorm)
+      return { nome, bonus: digitada.bonus, treinada: true, usavel: true }
+    }
+    return { nome, bonus: p[chave] ?? 0, treinada: false, usavel: !soTreinado }
+  })
+
+  const linhasExtras = Array.from(digitadas.values()).map(item => ({
+    nome: item.nome, bonus: item.bonus, treinada: true, usavel: true,
+  }))
+
+  const linhas = [...linhasFixas, ...linhasExtras]
 
   return (
     <div className="secao pericias-secao">
@@ -637,14 +666,17 @@ function SecaoPericias({ pericias, rolarPericia, dadoIcon }) {
         <span>BÔNUS</span>
       </div>
       <div className="pericias-lista">
-        {pericias.map((p, i) => (
-          <div key={i} className="pericia-linha"
-            style={{ cursor: 'pointer' }}
-            onClick={() => rolarPericia(p.nome, p.bonus)}
-            title={`Rolar ${p.nome}: 1d20 + ${p.bonus}`}>
+        {linhas.map((linha, i) => (
+          <div key={i}
+            className={`pericia-linha ${linha.treinada ? 'pericia-treinada' : ''} ${!linha.usavel ? 'pericia-bloqueada' : ''}`}
+            style={{ cursor: linha.usavel ? 'pointer' : 'default' }}
+            onClick={() => linha.usavel && rolarPericia(linha.nome, linha.bonus)}
+            title={linha.usavel
+              ? `Rolar ${linha.nome}: 1d20 + ${linha.bonus}`
+              : `${linha.nome} só pode ser testada por quem tem graduação nela`}>
             <img src={dadoIcon} className="per-dado-icon" alt="rolar" />
-            <span className="per-nome">{p.nome}</span>
-            <span className="per-temp">+{p.bonus}</span>
+            <span className="per-nome">{linha.nome}</span>
+            <span className="per-temp">{linha.usavel ? `+${linha.bonus}` : '—'}</span>
           </div>
         ))}
       </div>

@@ -371,7 +371,7 @@ html, body, #root { height: 100%; margin: 0; }
 
 .pericias-header {
   display: grid;
-  grid-template-columns: 1fr 70px 60px 50px;
+  grid-template-columns: 1fr 50px;
   padding: 4px 8px 4px 28px;
   background-color: #1a1a1a;
   border-bottom: 1px solid #555;
@@ -396,7 +396,7 @@ html, body, #root { height: 100%; margin: 0; }
 
 .pericia-linha {
   display: grid;
-  grid-template-columns: 20px 1fr 70px 60px 40px;
+  grid-template-columns: 20px 1fr 50px;
   align-items: center;
   gap: 8px;
   padding: 4px 8px;
@@ -408,13 +408,23 @@ html, body, #root { height: 100%; margin: 0; }
 .pericia-linha:last-child { border-bottom: none; }
 
 .per-dado-icon { width: 16px; height: 16px; filter: invert(1); opacity: 0.8; }
-.per-nome  { color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.per-atr   { text-align: center; color: #bbb; font-size: 0.75rem; }
-.per-bonus { text-align: center; color: #bbb; font-size: 0.75rem; }
-.per-temp  { text-align: center; font-weight: bold; color: white; text-decoration: underline; }
+.per-nome  { color: #bbb; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.per-temp  { text-align: center; font-weight: bold; color: #bbb; }
+
+/* Perícia treinada — o jogador digitou graduações nela, se destaca das demais */
+.pericia-treinada { background-color: rgba(139,0,0,0.14); }
+.pericia-treinada .per-nome { color: white; font-weight: 600; }
+.pericia-treinada .per-temp { color: #ff4d4d; text-decoration: underline; }
+.pericia-treinada .per-dado-icon { opacity: 1; }
+
+/* Perícia só-treinado sem graduação — não pode ser testada */
+.pericia-bloqueada { opacity: 0.4; }
+.pericia-bloqueada .per-dado-icon { opacity: 0.3; }
+.pericia-bloqueada .per-temp { text-decoration: none; }
 
 /* ── MACHUCADOS ─────────────────────────────────────────── */
 .machucados-secao  { width: 100%; margin-top: 8px; }
+
 
 .machucados-conteudo {
   background-color: #333;
@@ -788,7 +798,6 @@ html, body, #root { height: 100%; margin: 0; }
     padding: 7px 12px;
   }
 
-  /* Input sticky no fundo da aba dados */
   .mobile-dados-input-sticky {
     position: sticky;
     bottom: 70px; 
@@ -834,7 +843,6 @@ html, body, #root { height: 100%; margin: 0; }
     background-color: #8b000011;
   }
 
-  /* Linha indicadora no topo da aba ativa */
   .mobile-tab.ativa::before {
     content: '';
     position: absolute;
@@ -856,7 +864,6 @@ html, body, #root { height: 100%; margin: 0; }
     text-transform: uppercase;
   }
 
-  /* ── Animação de entrada do conteúdo da aba ── */
   .mobile-aba-content {
     animation: abaEntrar 0.18s ease;
   }
