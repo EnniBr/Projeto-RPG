@@ -29,6 +29,13 @@ const ATRIBUTOS = [
   { sigla: 'INT', chave: 'intelecto'   },
   { sigla: 'PRE', chave: 'presenca'    },
 ]
+
+// As 13 perícias fixas do livro (Combate Corpo a Corpo/à Distância já são
+// cobertas pela seção Ofensivo via Luta/Destreza, então não entram aqui).
+// "Especialidade" fica de fora da lista fixa porque sempre vem com um
+// subtipo (ex: "Especialidade (Ciências)") — cada uma digitada vira sua
+// própria linha, junto de qualquer outra perícia customizada que o jogador
+// escrever e que não bata com nenhum nome fixo.
 const PERICIAS_FIXAS = [
   { nome: 'Acrobacia',       chave: 'agilidade',   soTreinado: false },
   { nome: 'Atletismo',       chave: 'forca',       soTreinado: false },
@@ -47,6 +54,82 @@ const PERICIAS_FIXAS = [
 
 function normalizarNomePericia(str) {
   return (str || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
+}
+
+// ─── Parser de perícias direto do texto livre ──────────────────────────────
+// Independente do que o backend guarda em pericias_parsed — assim, mesmo que
+// o parser do servidor tenha alguma falha de formato, a ficha continua
+// reconhecendo corretamente o que o jogador escreveu.
+
+// Separa por vírgulas que não estão dentro de parênteses
+// (ex: não quebra "Especialidade (Ciências, Física)" ao meio)
+function separarItensPericias(texto) {
+  if (!texto) return []
+  const itens = []
+  let atual = ''
+  let profundidade = 0
+  for (const char of texto) {
+    if (char === '(') profundidade++
+    if (char === ')') profundidade = Math.max(0, profundidade - 1)
+    if (char === ',' && profundidade === 0) { itens.push(atual); atual = '' }
+    else atual += char
+  }
+  if (atual.trim()) itens.push(atual)
+  return itens.map(s => s.trim()).filter(Boolean)
+}
+
+// Extrai {nome, bonus} de um item cru, usando o ÚLTIMO "(+N)"/"(-N)"/"(N)"
+// da string como o bônus — funciona mesmo com parênteses extras no meio,
+// como em "Especialidade (agricultura) 8 (+9)"
+function parsearItemPericia(itemBruto) {
+  const ocorrencias = [...itemBruto.matchAll(/\(\s*([+-]?\d+)\s*\)/g)]
+  if (ocorrencias.length === 0) return null
+  const ultima = ocorrencias[ocorrencias.length - 1]
+  const bonus  = parseInt(ultima[1], 10)
+  if (Number.isNaN(bonus)) return null
+  let nome = itemBruto.slice(0, ultima.index).trim()
+  nome = nome.replace(/\s+\d+\s*$/, '').trim() // tira a graduação solta no final (ex: "Atletismo 4" → "Atletismo")
+  if (!nome) return null
+  return { nome, bonus }
+}
+
+function distanciaEdicao(a, b) {
+  const dp = Array.from({ length: a.length + 1 }, () => new Array(b.length + 1).fill(0))
+  for (let i = 0; i <= a.length; i++) dp[i][0] = i
+  for (let j = 0; j <= b.length; j++) dp[0][j] = j
+  for (let i = 1; i <= a.length; i++) {
+    for (let j = 1; j <= b.length; j++) {
+      dp[i][j] = a[i - 1] === b[j - 1]
+        ? dp[i - 1][j - 1]
+        : 1 + Math.min(dp[i - 1][j - 1], dp[i - 1][j], dp[i][j - 1])
+    }
+  }
+  return dp[a.length][b.length]
+}
+
+// Acha a perícia fixa correspondente a um nome digitado, tolerando acentos,
+// texto extra (ex: variantes de combate) e pequenos erros de digitação.
+function encontrarPericiaFixa(nomeDigitado) {
+  const alvo = normalizarNomePericia(nomeDigitado)
+  if (!alvo || alvo.startsWith('especialidade')) return null // Especialidade sempre vira linha própria
+
+  const exata = PERICIAS_FIXAS.find(fx => normalizarNomePericia(fx.nome) === alvo)
+  if (exata) return exata
+
+  const porPrefixo = PERICIAS_FIXAS.find(fx => {
+    const n = normalizarNomePericia(fx.nome)
+    return alvo.startsWith(n) || n.startsWith(alvo)
+  })
+  if (porPrefixo) return porPrefixo
+
+  let melhor = null, menorDist = Infinity
+  for (const fx of PERICIAS_FIXAS) {
+    const n = normalizarNomePericia(fx.nome)
+    const dist = distanciaEdicao(alvo, n)
+    if (dist < menorDist) { menorDist = dist; melhor = fx }
+  }
+  const limite = melhor ? Math.max(1, Math.floor(normalizarNomePericia(melhor.nome).length * 0.3)) : 0
+  return menorDist <= limite ? melhor : null
 }
 
 // ─── Parser de dados ────────────────────────────────────────────────────────
@@ -330,8 +413,8 @@ function FichaPersonagem() {
 
   const nome = p.nome ?? 'Personagem'
   const np   = sessao?.nivel_poder ?? '?'
-  const pericias_parsed = Array.isArray(p.pericias_parsed) ? p.pericias_parsed : []
 
+  // Props compartilhadas
   const propsMach = { machucados, pct, statusAtual, jogsPodemAlterar, alterarMachucados }
   const propsDados = {
     personagem: p, rolarNotacao, notacaoMod,
@@ -446,7 +529,7 @@ function FichaPersonagem() {
 
         {/* COLUNA 2 — perícias + machucados */}
         <div className="ficha-coluna" id="ficha-col2">
-          <SecaoPericias personagem={p} pericias={pericias_parsed} rolarPericia={rolarPericia} dadoIcon={dadoIcon} />
+          <SecaoPericias personagem={p} rolarPericia={rolarPericia} dadoIcon={dadoIcon} />
           <SecaoMachucados {...propsMach} />
         </div>
 
@@ -486,7 +569,7 @@ function FichaPersonagem() {
 
         {abaMobile === 'pericias' && (
           <div className="mobile-aba-content">
-            <SecaoPericias personagem={p} pericias={pericias_parsed} rolarPericia={rolarPericia} dadoIcon={dadoIcon} />
+            <SecaoPericias personagem={p} rolarPericia={rolarPericia} dadoIcon={dadoIcon} />
           </div>
         )}
 
@@ -533,6 +616,7 @@ function SecaoTexto({ titulo, texto }) {
   if (!texto?.trim()) return null
 
   function renderLinha(linha, i) {
+    // Suporte a **negrito**
     const partes = linha.split(/\*\*([^*]+)\*\*/)
     return (
       <p key={i} style={{ margin: '2px 0', paddingLeft: linha.startsWith('  ') ? 12 : 0 }}>
@@ -634,27 +718,31 @@ function SecaoDefensivo({ personagem: p, resistenciaTotal, dadoIcon, rolarNotaca
 
 // ─── Perícias ─────────────────────────────────────────────────────────────────
 
-function SecaoPericias({ personagem, pericias, rolarPericia, dadoIcon }) {
+function SecaoPericias({ personagem, dadoIcon, rolarPericia }) {
   const p = personagem ?? {}
 
-  const digitadas = new Map()
-  ;(pericias || []).forEach(item => {
-    if (item?.nome) digitadas.set(normalizarNomePericia(item.nome), item)
-  })
+  const itensDigitados = separarItensPericias(p.pericias_texto)
+    .map(parsearItemPericia)
+    .filter(Boolean)
 
-  const linhasFixas = PERICIAS_FIXAS.map(({ nome, chave, soTreinado }) => {
-    const chaveNorm = normalizarNomePericia(nome)
-    const digitada  = digitadas.get(chaveNorm)
-    if (digitada) {
-      digitadas.delete(chaveNorm)
-      return { nome, bonus: digitada.bonus, treinada: true, usavel: true }
+  const usados = new Set()
+  const linhasFixas = PERICIAS_FIXAS.map(fx => {
+    let indiceEncontrado = -1
+    for (let i = 0; i < itensDigitados.length; i++) {
+      if (usados.has(i)) continue
+      if (encontrarPericiaFixa(itensDigitados[i].nome) === fx) { indiceEncontrado = i; break }
     }
-    return { nome, bonus: p[chave] ?? 0, treinada: false, usavel: !soTreinado }
+    if (indiceEncontrado !== -1) {
+      usados.add(indiceEncontrado)
+      return { nome: fx.nome, bonus: itensDigitados[indiceEncontrado].bonus, treinada: true, usavel: true }
+    }
+    return { nome: fx.nome, bonus: p[fx.chave] ?? 0, treinada: false, usavel: !fx.soTreinado }
   })
 
-  const linhasExtras = Array.from(digitadas.values()).map(item => ({
-    nome: item.nome, bonus: item.bonus, treinada: true, usavel: true,
-  }))
+  // Especialidades e qualquer outra perícia digitada que não bateu com a lista fixa
+  const linhasExtras = itensDigitados
+    .filter((_, i) => !usados.has(i))
+    .map(item => ({ nome: item.nome, bonus: item.bonus, treinada: true, usavel: true }))
 
   const linhas = [...linhasFixas, ...linhasExtras]
 
