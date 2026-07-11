@@ -94,6 +94,10 @@ async function criarPersonagemCompleto(req, res) {
             sessao_id,
             nome,
             tipo = 'jogador',
+            // identidade
+            nome_civil = '',
+            cidade = '',
+            equipe = '',
             // atributos
             forca = 0, agilidade = 0, luta = 0, vigor = 0,
             destreza = 0, intelecto = 0, consciencia = 0, presenca = 0,
@@ -106,6 +110,10 @@ async function criarPersonagemCompleto(req, res) {
             equipamentos_texto = '',
             complicacoes_texto = '',
             citacao = '',
+            // aparência da ficha
+            cor_primaria = '#8b0000',
+            cor_secundaria = '#cccccc',
+            tema_blocos = 'escuro',
             // metadados
             imagem_posicao = { x: 50, y: 20, zoom: 1.0 },
         } = req.body
@@ -115,11 +123,12 @@ async function criarPersonagemCompleto(req, res) {
 
         // Snapshot completo para exportação de PDF
         const ficha_snapshot = {
-            nome, tipo,
+            nome, tipo, nome_civil, cidade, equipe,
             forca, agilidade, luta, vigor, destreza, intelecto, consciencia, presenca,
             esquiva, aparar, fortitude, resistencia, vontade,
             poderes_texto, pericias_texto, vantagens_texto,
             equipamentos_texto, complicacoes_texto, citacao,
+            cor_primaria, cor_secundaria, tema_blocos,
             imagem_posicao,
         }
 
@@ -128,6 +137,9 @@ async function criarPersonagemCompleto(req, res) {
                 data: {
                     nome,
                     tipo,
+                    nome_civil,
+                    cidade,
+                    equipe,
                     usuario_id: req.usuario.id,
                     forca, agilidade, luta, vigor,
                     destreza, intelecto, consciencia, presenca,
@@ -138,6 +150,9 @@ async function criarPersonagemCompleto(req, res) {
                     equipamentos_texto,
                     complicacoes_texto,
                     citacao,
+                    cor_primaria,
+                    cor_secundaria,
+                    tema_blocos,
                     imagem_posicao,
                     pericias_parsed,
                     ficha_snapshot,
@@ -164,11 +179,13 @@ async function editarPersonagemCompleto(req, res) {
         const id = Number(req.params.id)
         const {
             nome,
+            nome_civil, cidade, equipe,
             forca, agilidade, luta, vigor,
             destreza, intelecto, consciencia, presenca,
             esquiva, aparar, fortitude, resistencia, vontade,
             poderes_texto, pericias_texto, vantagens_texto,
             equipamentos_texto, complicacoes_texto, citacao,
+            cor_primaria, cor_secundaria, tema_blocos,
             imagem_posicao,
         } = req.body
 
@@ -176,12 +193,13 @@ async function editarPersonagemCompleto(req, res) {
         const pericias_parsed = parsearPericias(pericias_texto)
 
         const ficha_snapshot = {
-            nome,
+            nome, nome_civil, cidade, equipe,
             forca, agilidade, luta, vigor,
             destreza, intelecto, consciencia, presenca,
             esquiva, aparar, fortitude, resistencia, vontade,
             poderes_texto, pericias_texto, vantagens_texto,
             equipamentos_texto, complicacoes_texto, citacao,
+            cor_primaria, cor_secundaria, tema_blocos,
             imagem_posicao,
         }
 
@@ -189,6 +207,9 @@ async function editarPersonagemCompleto(req, res) {
             where: { id },
             data: {
                 nome,
+                nome_civil,
+                cidade,
+                equipe,
                 forca, agilidade, luta, vigor,
                 destreza, intelecto, consciencia, presenca,
                 esquiva, aparar, fortitude, resistencia, vontade,
@@ -198,6 +219,9 @@ async function editarPersonagemCompleto(req, res) {
                 equipamentos_texto,
                 complicacoes_texto,
                 citacao,
+                cor_primaria,
+                cor_secundaria,
+                tema_blocos,
                 imagem_posicao,
                 pericias_parsed,
                 ficha_snapshot,

@@ -28,10 +28,12 @@ const DEFESAS_CAMPOS = [
 
 const DADOS_INICIAIS = {
   nome: '',
+  nome_civil: '', cidade: '', equipe: '',
   forca: 0, agilidade: 0, luta: 0, destreza: 0, vigor: 0, intelecto: 0, consciencia: 0, presenca: 0,
   esquiva: 0, aparar: 0, fortitude: 0, resistencia: 0, vontade: 0,
   poderes_texto: '', pericias_texto: '', vantagens_texto: '', equipamentos_texto: '', complicacoes_texto: '',
   citacao: '',
+  cor_primaria: '#8b0000', cor_secundaria: '#cccccc', tema_blocos: 'escuro',
 }
 
 function CriacaoPersonagem() {
@@ -160,6 +162,23 @@ function CriacaoPersonagem() {
                 <input type="text" placeholder="Ex: Capitão Raio, Sombra, Titã..."
                   value={dados.nome} onChange={e => set('nome', e.target.value)} className="cria-input" />
               </div>
+              <div className="ed-hab-grid" style={{ gridTemplateColumns: '1fr 1fr 1fr' }}>
+                <div className="cria-campo">
+                  <label>Nome civil</label>
+                  <input type="text" placeholder="Ex: Ricardo Alves..." className="cria-input"
+                    value={dados.nome_civil} onChange={e => set('nome_civil', e.target.value)} />
+                </div>
+                <div className="cria-campo">
+                  <label>Cidade</label>
+                  <input type="text" placeholder="Ex: São Paulo..." className="cria-input"
+                    value={dados.cidade} onChange={e => set('cidade', e.target.value)} />
+                </div>
+                <div className="cria-campo">
+                  <label>Equipe</label>
+                  <input type="text" placeholder="Ex: Vingadores..." className="cria-input"
+                    value={dados.equipe} onChange={e => set('equipe', e.target.value)} />
+                </div>
+              </div>
               <div className="cria-campo">
                 <label>Foto (fundo da ficha)</label>
                 <div className="ed-foto-linha">
@@ -173,6 +192,36 @@ function CriacaoPersonagem() {
                   )}
                 </div>
                 <span className="cria-campo-dica">Depois de salvar, você pode ajustar posição e zoom da imagem direto na ficha.</span>
+              </div>
+            </div>
+          </details>
+
+          <details className="ed-secao" open>
+            <summary className="ed-secao-titulo">Aparência da Ficha</summary>
+            <div className="ed-secao-corpo">
+              <div className="ed-hab-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
+                <div className="cria-campo">
+                  <label>Cor primária (cabeçalho e títulos)</label>
+                  <input type="color" className="cria-input ed-input-cor"
+                    value={dados.cor_primaria} onChange={e => set('cor_primaria', e.target.value)} />
+                </div>
+                <div className="cria-campo">
+                  <label>Cor secundária (texto dos blocos)</label>
+                  <input type="color" className="cria-input ed-input-cor"
+                    value={dados.cor_secundaria} onChange={e => set('cor_secundaria', e.target.value)} />
+                </div>
+              </div>
+              <div className="cria-campo">
+                <label>Fundo dos blocos</label>
+                <div className="ed-tema-opcoes">
+                  <button type="button"
+                    className={`ed-btn-secundario ${dados.tema_blocos === 'escuro' ? 'ed-tema-ativo' : ''}`}
+                    onClick={() => set('tema_blocos', 'escuro')}>🌙 Escuro</button>
+                  <button type="button"
+                    className={`ed-btn-secundario ${dados.tema_blocos === 'claro' ? 'ed-tema-ativo' : ''}`}
+                    onClick={() => set('tema_blocos', 'claro')}>☀️ Claro</button>
+                </div>
+                <span className="cria-campo-dica">Escolha uma cor secundária com bom contraste para o fundo escolhido.</span>
               </div>
             </div>
           </details>

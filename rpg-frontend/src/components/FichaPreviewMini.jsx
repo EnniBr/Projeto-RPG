@@ -1,9 +1,5 @@
 import './FichaPreviewMini.css'
 
-// ─── Parser client-side de perícias (espelha o parsearPericias() do backend) ──
-// Formato esperado: "Atletismo 4 (+6), Tecnologia 4 (+17), Percepção 4 (+8)"
-// Isso é só para o preview reagir na hora — o valor "oficial" (pericias_parsed)
-// é sempre recalculado pelo backend ao salvar.
 export function parsePericiasPreview(texto) {
   if (!texto || !texto.trim()) return []
   return texto.split(',')
@@ -73,6 +69,15 @@ function FichaPreviewMini({ dados, fotoUrl, np, tipo = 'jogador' }) {
         </div>
         <div className="prev-bg-rodape">
           <div className="prev-nome">{d.nome?.trim() || 'Nome do personagem'}</div>
+          {(d.nome_civil || d.cidade || d.equipe) && (
+            <div className="prev-identidade">
+              {[
+                d.nome_civil && `Nome: ${d.nome_civil}`,
+                d.cidade && `Cidade: ${d.cidade}`,
+                d.equipe && `Equipe: ${d.equipe}`,
+              ].filter(Boolean).join(' · ')}
+            </div>
+          )}
         </div>
       </div>
 

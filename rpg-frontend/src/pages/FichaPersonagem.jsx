@@ -52,6 +52,16 @@ const PERICIAS_FIXAS = [
   { nome: 'Veículos',        chave: 'destreza',    soTreinado: false },
 ]
 
+function hexParaRgba(hex, alpha) {
+  const limpo = (hex || '#8b0000').replace('#', '')
+  const expandido = limpo.length === 3 ? limpo.split('').map(c => c + c).join('') : limpo
+  const bigint = parseInt(expandido, 16)
+  const r = (bigint >> 16) & 255
+  const g = (bigint >> 8) & 255
+  const b = bigint & 255
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`
+}
+
 function normalizarNomePericia(str) {
   return (str || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
 }
@@ -424,8 +434,21 @@ function FichaPersonagem() {
 
   // ─── Render ───────────────────────────────────────────────────────────────
 
+  const corPrimaria   = p.cor_primaria   || '#8b0000'
+  const corSecundaria = p.cor_secundaria || '#cccccc'
+
   return (
-    <div className="ficha-root">
+    <div
+      className={`ficha-root ${p.tema_blocos === 'claro' ? 'ficha-tema-claro' : 'ficha-tema-escuro'}`}
+      style={{
+        '--cor-primaria': corPrimaria,
+        '--cor-secundaria': corSecundaria,
+        '--cor-primaria-07': hexParaRgba(corPrimaria, 0.07),
+        '--cor-primaria-13': hexParaRgba(corPrimaria, 0.13),
+        '--cor-primaria-20': hexParaRgba(corPrimaria, 0.2),
+        '--cor-primaria-40': hexParaRgba(corPrimaria, 0.4),
+      }}
+    >
 
       {/* IMAGEM DE FUNDO — ocupa toda a tela */}
       <div
@@ -457,7 +480,13 @@ function FichaPersonagem() {
         </div>
         <div className="ficha-topo-centro">
           <h1 className="ficha-nome">{nome.toUpperCase()}</h1>
-          <span className="ficha-sessao-label">{sessao?.nome ?? ''}</span>
+          <span className="ficha-sessao-label">
+            {[
+              p.nome_civil && `Nome: ${p.nome_civil}`,
+              p.cidade && `Cidade: ${p.cidade}`,
+              p.equipe && `Equipe: ${p.equipe}`,
+            ].filter(Boolean).join(' · ') || (sessao?.nome ?? '')}
+          </span>
         </div>
         <div className="ficha-topo-dir">
           <span className="ficha-np-badge">NP {np}</span>
@@ -514,8 +543,14 @@ function FichaPersonagem() {
           {/* Poderes — texto livre */}
           <SecaoTexto titulo="PODERES" texto={p.poderes_texto} />
 
+          {/* Perícias por extenso, como escrito na criação — além da lista de rolagem na coluna ao lado */}
+          <SecaoTexto titulo="PERÍCIAS" texto={p.pericias_texto} />
+
           {/* Vantagens — texto livre */}
           <SecaoTexto titulo="VANTAGENS" texto={p.vantagens_texto} />
+
+          {/* Equipamentos — texto livre */}
+          <SecaoTexto titulo="EQUIPAMENTOS" texto={p.equipamentos_texto} />
 
           {/* Ofensivo */}
           <SecaoOfensivo personagem={p} dadoIcon={dadoIcon} rolarNotacao={rolarNotacao} notacaoMod={notacaoMod} />
@@ -525,18 +560,20 @@ function FichaPersonagem() {
 
           {/* Complicações — texto livre */}
           <SecaoTexto titulo="COMPLICAÇÕES" texto={p.complicacoes_texto} />
+
+          {/* Citação */}
+          {p.citacao?.trim() && <div className="ficha-citacao">"{p.citacao}"</div>}
         </div>
 
-        {/* COLUNA 2 — perícias + machucados */}
+        {/* COLUNA 2 — perícias (rolagem), machucados e dados */}
         <div className="ficha-coluna" id="ficha-col2">
           <SecaoPericias personagem={p} rolarPericia={rolarPericia} dadoIcon={dadoIcon} />
           <SecaoMachucados {...propsMach} />
-        </div>
-
-        {/* COLUNA 3 — dados */}
-        <div className="ficha-coluna" id="ficha-col3">
           <BlocoDados {...propsDados} />
         </div>
+
+        {/* COLUNA 3 — deixada vazia de propósito: é o espaço onde a imagem
+            de fundo aparece sem nenhum bloco por cima */}
 
       </div>
 
@@ -577,9 +614,16 @@ function FichaPersonagem() {
           <div className="mobile-aba-content">
             <div className="mobile-ficha-header">
               <div className="mobile-ficha-nome">{nome}</div>
-              <div className="mobile-ficha-meta">{sessao?.nome ?? ''} · NP {np}</div>
+              <div className="mobile-ficha-meta">
+                {[
+                  p.nome_civil && `Nome: ${p.nome_civil}`,
+                  p.cidade && `Cidade: ${p.cidade}`,
+                  p.equipe && `Equipe: ${p.equipe}`,
+                ].filter(Boolean).join(' · ') || `${sessao?.nome ?? ''} · NP ${np}`}
+              </div>
             </div>
             <SecaoTexto titulo="PODERES"       texto={p.poderes_texto} />
+            <SecaoTexto titulo="PERÍCIAS"      texto={p.pericias_texto} />
             <SecaoTexto titulo="VANTAGENS"     texto={p.vantagens_texto} />
             <SecaoTexto titulo="EQUIPAMENTOS"  texto={p.equipamentos_texto} />
             <SecaoTexto titulo="COMPLICAÇÕES"  texto={p.complicacoes_texto} />

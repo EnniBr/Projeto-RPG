@@ -96,6 +96,17 @@
   text-overflow: ellipsis;
 }
 
+.prev-identidade {
+  font-family: 'Crimson Pro', serif;
+  font-size: 0.72rem;
+  color: #ddd;
+  text-shadow: 0 1px 6px rgba(0,0,0,0.9);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+
 /* ── Corpo ── */
 .prev-corpo {
   padding: 14px 16px 18px;
