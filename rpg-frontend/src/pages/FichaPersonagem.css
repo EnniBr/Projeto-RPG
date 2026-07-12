@@ -287,7 +287,7 @@ html, body, #root { height: 100%; margin: 0; }
   align-items: start;
   gap: 20px;
   padding: 24px 20px 48px;
-  pointer-events: none; /* deixa a área vazia (coluna 3, gaps) "vazada" pro drag da imagem de fundo */
+  pointer-events: none;
 }
 
 .ficha-coluna {
@@ -302,18 +302,18 @@ html, body, #root { height: 100%; margin: 0; }
   -webkit-backdrop-filter: blur(3px);
   min-width: 0;
   color: var(--cor-secundaria);
-  pointer-events: auto; /* restaura clique/rolagem dentro dos blocos, mesmo com o container "vazado" */
+  pointer-events: auto; 
 }
 
-/* Tema claro — blocos ficam num painel claro translúcido, texto escuro */
 .ficha-tema-claro .ficha-coluna {
-  background-color: rgba(255,255,255,0.82);
+  background-color: rgba(255,255,255,0.55);
   border: 1px solid rgba(0,0,0,0.08);
   color: #2a2a2a;
 }
-.ficha-tema-claro .mobile-content { background-color: rgba(255,255,255,0.75) !important; }
-.ficha-tema-claro .secao-conteudo { background-color: rgba(255,255,255,0.9); color: #2a2a2a; }
+.ficha-tema-claro .mobile-content { background-color: rgba(255,255,255,0.55) !important; }
+.ficha-tema-claro .secao-conteudo { background-color: rgba(255,255,255,0.65); color: #2a2a2a; }
 .ficha-tema-claro .secao-titulo { color: white; }
+
 .ficha-tema-claro .atr-valor,
 .ficha-tema-claro .per-nome,
 .ficha-tema-claro .per-temp,
@@ -322,14 +322,48 @@ html, body, #root { height: 100%; margin: 0; }
 .ficha-tema-claro .ofensivo-iniciativa,
 .ficha-tema-claro .ofensivo-linha,
 .ficha-tema-claro .ofensivo-poder-nome { color: #222; }
-.ficha-tema-claro .pericias-lista { background-color: rgba(255,255,255,0.9); }
-.ficha-tema-claro .pericia-linha { color: #333; border-bottom-color: rgba(0,0,0,0.08); }
+
+.ficha-tema-claro .atr-valor { background-color: rgba(0,0,0,0.08); }
 .ficha-tema-claro .caixa-atributo { background-color: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.1); }
+
+/* Ícones de dado — no escuro ficam brancos (invertidos), no claro voltam ao tom original (escuro) */
+.ficha-tema-claro .dado-icone-inv,
+.ficha-tema-claro .per-dado-icon { filter: none; }
+
+/* Perícias */
+.ficha-tema-claro .pericias-header {
+  background-color: rgba(0,0,0,0.06);
+  border-bottom-color: rgba(0,0,0,0.15);
+}
+.ficha-tema-claro .pericias-header span { color: #555; }
+.ficha-tema-claro .pericias-lista { background-color: rgba(255,255,255,0.65); }
+.ficha-tema-claro .pericia-linha { color: #333; border-bottom-color: rgba(0,0,0,0.08); }
 
 /* Especificidade mais alta que ".pericia-treinada .per-nome" do modo escuro,
    senão a regra escura (mesma especificidade, declarada depois) prevalecia */
 .ficha-tema-claro .pericia-treinada { background-color: rgba(139,0,0,0.08); }
 .ficha-tema-claro .pericia-treinada .per-nome { color: #1a1a1a; }
+
+/* Machucados */
+.ficha-tema-claro .machucados-conteudo { background-color: rgba(0,0,0,0.05); }
+.ficha-tema-claro .machucados-barra-bg { background-color: rgba(0,0,0,0.1); border-color: rgba(0,0,0,0.2); }
+.ficha-tema-claro .machucados-status   { background-color: rgba(0,0,0,0.06); }
+.ficha-tema-claro .mach-grau .grau-desc { color: #333; }
+
+/* Rolagens rápidas (dados) */
+.ficha-tema-claro .dados-rapidos-titulo   { color: #666; border-bottom-color: rgba(0,0,0,0.1); }
+.ficha-tema-claro .dados-btn-rapido       { background-color: rgba(0,0,0,0.05); border-color: rgba(0,0,0,0.15); color: #444; }
+.ficha-tema-claro .dados-historico        { background-color: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.1); }
+.ficha-tema-claro .dados-historico-vazio  { color: #999; }
+.ficha-tema-claro .dado-resultado         { background-color: rgba(0,0,0,0.05); border-color: rgba(0,0,0,0.12); }
+.ficha-tema-claro .dado-resultado-label   { color: #444; }
+.ficha-tema-claro .dado-resultado-hora    { color: #999; }
+.ficha-tema-claro .dado-resultado-detalhes { color: #555; }
+.ficha-tema-claro .dados-input-bar        { background-color: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.15); }
+.ficha-tema-claro .dados-input            { color: #222; }
+.ficha-tema-claro .dados-input::placeholder { color: #999; }
+.ficha-tema-claro .dados-input:focus      { background-color: rgba(0,0,0,0.08); }
+.ficha-tema-claro .dados-input-btn        { background-color: rgba(0,0,0,0.1); }
 
 /* ── ATRIBUTOS ──────────────────────────────────────────── */
 .grid-atributos {
@@ -347,8 +381,8 @@ html, body, #root { height: 100%; margin: 0; }
 }
 
 .atr-titulo {
-  background-color: #ffffff;
-  color: #000;
+  background-color: var(--cor-primaria);
+  color: white;
   font-weight: bold;
   font-size: 1rem;
   text-align: center;
@@ -519,6 +553,7 @@ html, body, #root { height: 100%; margin: 0; }
 .pericia-linha:last-child { border-bottom: none; }
 
 .per-dado-icon { width: 16px; height: 16px; filter: invert(1); opacity: 0.8; }
+.dado-icone-inv { filter: invert(1); }
 .per-nome  { color: #bbb; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .per-temp  { text-align: center; font-weight: bold; color: #bbb; }
 
@@ -849,11 +884,9 @@ html, body, #root { height: 100%; margin: 0; }
     min-height: calc(100vh - 60px);
   }
 
-  /* Seção dentro do mobile */
   .mobile-content .secao        { margin-bottom: 8px; }
   .mobile-content .ficha-secoes { margin-top: 8px; }
 
-  /* ── Cabeçalho da aba "Ficha" ── */
   .mobile-ficha-header {
     text-align: center;
     padding: 6px 0 16px;
@@ -876,7 +909,6 @@ html, body, #root { height: 100%; margin: 0; }
     margin-top: 4px;
   }
 
-  /* ── Atributos mobile: grid 4x2 mais compacto ── */
   .mobile-content .grid-atributos {
     grid-template-columns: repeat(4, 1fr);
     gap: 6px;
@@ -886,7 +918,6 @@ html, body, #root { height: 100%; margin: 0; }
   .mobile-content .atr-titulo { font-size: 0.8rem; }
   .mobile-content .atr-valor  { font-size: 1.2rem; padding: 8px 0; }
 
-  /* ── Dados mobile: histórico maior, input sticky ── */
   .mobile-dados-wrapper {
     display: flex;
     flex-direction: column;
@@ -909,7 +940,6 @@ html, body, #root { height: 100%; margin: 0; }
     padding: 7px 12px;
   }
 
-  /* Input sticky no fundo da aba dados */
   .mobile-dados-input-sticky {
     position: sticky;
     bottom: 70px; 
@@ -955,7 +985,6 @@ html, body, #root { height: 100%; margin: 0; }
     background-color: var(--cor-primaria-07);
   }
 
-  /* Linha indicadora no topo da aba ativa */
   .mobile-tab.ativa::before {
     content: '';
     position: absolute;
@@ -977,7 +1006,6 @@ html, body, #root { height: 100%; margin: 0; }
     text-transform: uppercase;
   }
 
-  /* ── Animação de entrada do conteúdo da aba ── */
   .mobile-aba-content {
     animation: abaEntrar 0.18s ease;
   }

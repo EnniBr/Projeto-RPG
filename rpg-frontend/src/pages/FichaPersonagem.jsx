@@ -30,12 +30,6 @@ const ATRIBUTOS = [
   { sigla: 'PRE', chave: 'presenca'    },
 ]
 
-// As 13 perícias fixas do livro (Combate Corpo a Corpo/à Distância já são
-// cobertas pela seção Ofensivo via Luta/Destreza, então não entram aqui).
-// "Especialidade" fica de fora da lista fixa porque sempre vem com um
-// subtipo (ex: "Especialidade (Ciências)") — cada uma digitada vira sua
-// própria linha, junto de qualquer outra perícia customizada que o jogador
-// escrever e que não bata com nenhum nome fixo.
 const PERICIAS_FIXAS = [
   { nome: 'Acrobacia',       chave: 'agilidade',   soTreinado: false },
   { nome: 'Atletismo',       chave: 'forca',       soTreinado: false },
@@ -67,12 +61,6 @@ function normalizarNomePericia(str) {
 }
 
 // ─── Parser de perícias direto do texto livre ──────────────────────────────
-// Independente do que o backend guarda em pericias_parsed — assim, mesmo que
-// o parser do servidor tenha alguma falha de formato, a ficha continua
-// reconhecendo corretamente o que o jogador escreveu.
-
-// Separa por vírgulas que não estão dentro de parênteses
-// (ex: não quebra "Especialidade (Ciências, Física)" ao meio)
 function separarItensPericias(texto) {
   if (!texto) return []
   const itens = []
@@ -88,9 +76,6 @@ function separarItensPericias(texto) {
   return itens.map(s => s.trim()).filter(Boolean)
 }
 
-// Extrai {nome, bonus} de um item cru, usando o ÚLTIMO "(+N)"/"(-N)"/"(N)"
-// da string como o bônus — funciona mesmo com parênteses extras no meio,
-// como em "Especialidade (agricultura) 8 (+9)"
 function parsearItemPericia(itemBruto) {
   const ocorrencias = [...itemBruto.matchAll(/\(\s*([+-]?\d+)\s*\)/g)]
   if (ocorrencias.length === 0) return null
@@ -98,7 +83,7 @@ function parsearItemPericia(itemBruto) {
   const bonus  = parseInt(ultima[1], 10)
   if (Number.isNaN(bonus)) return null
   let nome = itemBruto.slice(0, ultima.index).trim()
-  nome = nome.replace(/\s+\d+\s*$/, '').trim() // tira a graduação solta no final (ex: "Atletismo 4" → "Atletismo")
+  nome = nome.replace(/\s+\d+\s*$/, '').trim() 
   if (!nome) return null
   return { nome, bonus }
 }
@@ -117,11 +102,9 @@ function distanciaEdicao(a, b) {
   return dp[a.length][b.length]
 }
 
-// Acha a perícia fixa correspondente a um nome digitado, tolerando acentos,
-// texto extra (ex: variantes de combate) e pequenos erros de digitação.
 function encontrarPericiaFixa(nomeDigitado) {
   const alvo = normalizarNomePericia(nomeDigitado)
-  if (!alvo || alvo.startsWith('especialidade')) return null // Especialidade sempre vira linha própria
+  if (!alvo || alvo.startsWith('especialidade')) return null 
 
   const exata = PERICIAS_FIXAS.find(fx => normalizarNomePericia(fx.nome) === alvo)
   if (exata) return exata
@@ -210,7 +193,6 @@ function FichaPersonagem() {
   const [jogsPodePersonalizar,  setJogsPodePersonalizar]  = useState(false)
   const [uploadandoFoto,        setUploadandoFoto]        = useState(false)
 
-  // Painel de aparência (engrenagem)
   const [painelAberto,   setPainelAberto]   = useState(false)
   const [salvandoAparencia, setSalvandoAparencia] = useState(false)
 
@@ -651,8 +633,6 @@ function FichaPersonagem() {
           <BlocoDados {...propsDados} />
         </div>
 
-        {/* COLUNA 3 — deixada vazia de propósito: é o espaço onde a imagem
-            de fundo aparece sem nenhum bloco por cima */}
 
       </div>
 
@@ -774,7 +754,7 @@ function SecaoOfensivo({ personagem: p, dadoIcon, rolarNotacao, notacaoMod }) {
           style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}
           title="Clique para rolar Iniciativa"
           onClick={() => rolarNotacao('Iniciativa', notacaoMod(iniciativa))}>
-          <img src={dadoIcon} alt="d20" style={{ width: 14, filter: 'invert(1)', opacity: 0.7 }} />
+          <img src={dadoIcon} alt="d20" className="dado-icone-inv" style={{ width: 14, opacity: 0.7 }} />
           INICIATIVA +{iniciativa}
         </div>
         <div style={{ marginTop: 8 }}>
@@ -784,7 +764,7 @@ function SecaoOfensivo({ personagem: p, dadoIcon, rolarNotacao, notacaoMod }) {
             onClick={() => rolarNotacao('Ataque Corpo a Corpo', notacaoMod(luta))}>
             <div className="ofensivo-poder-nome">Ataque Corpo a Corpo</div>
             <div className="ofensivo-poder-linha">
-              <img src={dadoIcon} alt="d20" style={{ width: 13, filter: 'invert(1)', opacity: 0.7 }} />
+              <img src={dadoIcon} alt="d20" className="dado-icone-inv" style={{ width: 13, opacity: 0.7 }} />
               <span>1d20 + {luta} (LUT)</span>
             </div>
           </div>
@@ -830,7 +810,7 @@ function SecaoDefensivo({ personagem: p, resistenciaTotal, dadoIcon, rolarNotaca
             <span className="def-nome">{label}</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <span className="def-valor">+{valor}</span>
-              <img src={dadoIcon} alt="d20" style={{ width: 13, filter: 'invert(1)', opacity: 0.45 }} />
+              <img src={dadoIcon} alt="d20" className="dado-icone-inv" style={{ width: 13, opacity: 0.45 }} />
             </div>
           </div>
         ))}
@@ -862,7 +842,6 @@ function SecaoPericias({ personagem, dadoIcon, rolarPericia }) {
     return { nome: fx.nome, bonus: p[fx.chave] ?? 0, treinada: false, usavel: !fx.soTreinado }
   })
 
-  // Especialidades e qualquer outra perícia digitada que não bateu com a lista fixa
   const linhasExtras = itensDigitados
     .filter((_, i) => !usados.has(i))
     .map(item => ({ nome: item.nome, bonus: item.bonus, treinada: true, usavel: true }))
@@ -984,7 +963,7 @@ function BlocoDados({ personagem: p, rolarNotacao, notacaoMod, resistenciaTotal,
             onChange={e => setDiceInput(e.target.value)}
             onKeyDown={handleDiceInput} />
           <button className="dados-input-btn" onClick={submitDice} title="Rolar (Enter)">
-            <img src={dadoIcon} alt="rolar" style={{ width: 20, height: 20, filter: 'invert(1)' }} />
+            <img src={dadoIcon} alt="rolar" className="dado-icone-inv" style={{ width: 20, height: 20 }} />
           </button>
         </div>
       </div>
