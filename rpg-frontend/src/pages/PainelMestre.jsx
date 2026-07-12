@@ -4,7 +4,6 @@ import { useSessao } from '../contexts/SessaoContext'
 import { useSocket } from '../contexts/SocketContext'
 import api from '../services/api'
 import dadoIcon from '../assets/dice-d20-svgrepo-com.svg'
-import regras from '../data/regras_mm3e.json'
 import ModalCriacaoNPC from '../components/ModalCriacaoNPC'
 import './PainelMestre.css'
 import './PainelMestre_mobile.css'
@@ -22,18 +21,36 @@ const STATUS_LABEL = [
   { classe: 'pm-status-critico', texto: 'Ferimento Grave' },
 ]
 
-const HAB_PARA_CHAVE = {
-  'Força': 'forca', 'Vigor': 'vigor', 'Agilidade': 'agilidade',
-  'Destreza': 'destreza', 'Luta': 'luta', 'Intelecto': 'intelecto',
-  'Consciência': 'consciencia', 'Prontidão': 'consciencia', 'Presença': 'presenca',
-}
-const PERICIA_INFO = {}
-regras.pericias.forEach(p => {
-  PERICIA_INFO[p.nome] = {
-    chave: HAB_PARA_CHAVE[p.habilidade_vinculada] ?? null,
-    sigla: p.habilidade_vinculada?.substring(0, 3).toUpperCase() ?? '—',
+function separarItensPericias(texto) {
+  if (!texto) return []
+  const itens = []
+  let atual = ''
+  let profundidade = 0
+  for (const char of texto) {
+    if (char === '(') profundidade++
+    if (char === ')') profundidade = Math.max(0, profundidade - 1)
+    if (char === ',' && profundidade === 0) { itens.push(atual); atual = '' }
+    else atual += char
   }
-})
+  if (atual.trim()) itens.push(atual)
+  return itens.map(s => s.trim()).filter(Boolean)
+}
+
+function parsearItemPericia(itemBruto) {
+  const ocorrencias = [...itemBruto.matchAll(/\(\s*([+-]?\d+)\s*\)/g)]
+  if (ocorrencias.length === 0) return null
+  const ultima = ocorrencias[ocorrencias.length - 1]
+  const bonus  = parseInt(ultima[1], 10)
+  if (Number.isNaN(bonus)) return null
+  let nome = itemBruto.slice(0, ultima.index).trim()
+  nome = nome.replace(/\s+\d+\s*$/, '').trim()
+  if (!nome) return null
+  return { nome, bonus }
+}
+
+function parsearPericiasTexto(texto) {
+  return separarItensPericias(texto).map(parsearItemPericia).filter(Boolean)
+}
 
 // ─── Dice helpers ──────────────────────────────────────────────────────────
 
@@ -139,7 +156,6 @@ function PainelMestre() {
       ))
     })
 
-    // Recebe rolagens dos jogadores
     socket.on('dice-roll-resultado', (rollData) => {
       setLiveRolls(prev => [...prev.slice(-99), { id: Date.now(), ...rollData }])
     })
@@ -617,7 +633,6 @@ function PainelMestre() {
 // ─── Card de personagem ────────────────────────────────────────────────────
 
 function CardPersonagem({ personagem, mostrarJogador, sessaoId, onMachucadosChange, onRoll, onDeletar }) {
-  const atr = personagem.atributo
   const [periciasAbertas,   setPericiasAbertas]   = useState(false)
   const [fotoUrl,           setFotoUrl]           = useState(personagem.foto)
   const [uploadando,        setUploadando]        = useState(false)
@@ -625,22 +640,17 @@ function CardPersonagem({ personagem, mostrarJogador, sessaoId, onMachucadosChan
   const [temBarra,          setTemBarra]          = useState(     
     personagem.tipo !== 'npc' || (personagem.machucados ?? 0) > 0
   )
-  
-  const defEsquiva     = (atr?.agilidade   ?? 0) + (atr?.esquiva   ?? 0)
-  const defAparar      = (atr?.luta        ?? 0) + (atr?.aparar    ?? 0)
-  const defFortitude   = (atr?.vigor       ?? 0) + (atr?.fortitude ?? 0)
-  const defVontade     = (atr?.consciencia ?? 0) + (atr?.vontade   ?? 0)
-  const poderProtecao  = personagem.poderes?.find(p =>
-    p.efeito_base?.toLowerCase().includes('proteção') ||
-    p.efeito_base?.toLowerCase().includes('protecao') ||
-    p.nome?.toLowerCase().includes('proteção')
-  )
-  const defResistencia = (atr?.vigor ?? 0) + (poderProtecao?.graduacoes ?? 0)
 
-  const poderesOfensivos = personagem.poderes?.filter(p =>
-    p.efeito_base?.toLowerCase().includes('dano') ||
-    p.efeito_base?.toLowerCase().includes('aflição')
-  ) ?? []
+  const defEsquiva     = personagem.esquiva   ?? 0
+  const defAparar      = personagem.aparar    ?? 0
+  const defFortitude   = personagem.fortitude ?? 0
+  const defVontade     = personagem.vontade   ?? 0
+  const defResistencia = (personagem.vigor ?? 0) + (personagem.resistencia ?? 0)
+
+  const periciasTreinadas = parsearPericiasTexto(personagem.pericias_texto)
+
+  const complicacoesLinhas = (personagem.complicacoes_texto || '')
+    .split('\n').map(s => s.trim()).filter(Boolean)
 
   const mach       = personagem.machucados ?? 0
   const pct        = ((MAX_MACH - mach) / MAX_MACH) * 100
@@ -651,19 +661,13 @@ function CardPersonagem({ personagem, mostrarJogador, sessaoId, onMachucadosChan
     if (novo !== mach) onMachucadosChange(personagem.id, novo)
   }
 
-  // Rolar ataque de um poder
-  function rolarAtaque(poder) {
-    const mod   = atr?.luta ?? 0
-    const label = `${personagem.nome}: Ataque — ${poder.nome}`
-    onRoll(label, notacaoMod(mod), personagem.nome)
+  function rolarAtaqueCorpoACorpo() {
+    const mod = personagem.luta ?? 0
+    onRoll(`${personagem.nome}: Ataque Corpo a Corpo`, notacaoMod(mod), personagem.nome)
   }
 
-  // Rolar perícia
-  function rolarPericia(nomePericia) {
-    const info = PERICIA_INFO[nomePericia]
-    const base = info?.chave ? (atr?.[info.chave] ?? 0) : 0
-    const label = `${personagem.nome}: ${nomePericia}`
-    onRoll(label, notacaoMod(base), personagem.nome)
+  function rolarPericia(nomePericia, bonus) {
+    onRoll(`${personagem.nome}: ${nomePericia}`, notacaoMod(bonus), personagem.nome)
   }
 
   return (
@@ -754,8 +758,8 @@ function CardPersonagem({ personagem, mostrarJogador, sessaoId, onMachucadosChan
       <div className="pm-secao-titulo">Defesas</div>
       <div className="pm-defesas-grid">
         {[
-          { label: 'ESQ', valor: (atr?.agilidade ?? 0) + (atr?.esquiva ?? 0) },
-          { label: 'APA', valor: (atr?.luta ?? 0) + (atr?.aparar ?? 0) },
+          { label: 'ESQ', valor: defEsquiva },
+          { label: 'APA', valor: defAparar },
         ].map(({ label, valor }) => (
           <div key={label} className="pm-def-item">
             <span className="pm-def-label">{label}</span>
@@ -764,9 +768,9 @@ function CardPersonagem({ personagem, mostrarJogador, sessaoId, onMachucadosChan
         ))}
 
         {[
-          { label: 'FOR', valor: (atr?.vigor ?? 0) + (atr?.fortitude ?? 0),     mod: (atr?.vigor ?? 0) + (atr?.fortitude ?? 0) },
-          { label: 'RES', valor: (atr?.vigor ?? 0),                              mod: atr?.vigor ?? 0 },
-          { label: 'VON', valor: (atr?.consciencia ?? 0) + (atr?.vontade ?? 0), mod: (atr?.consciencia ?? 0) + (atr?.vontade ?? 0) },
+          { label: 'FOR', valor: defFortitude,   mod: defFortitude },
+          { label: 'RES', valor: defResistencia, mod: defResistencia },
+          { label: 'VON', valor: defVontade,     mod: defVontade },
         ].map(({ label, valor, mod }) => (
           <div key={label} className="pm-def-item" style={{ cursor: 'pointer' }}
             title={`Rolar ${label}: 1d20+${mod}`}
@@ -779,28 +783,22 @@ function CardPersonagem({ personagem, mostrarJogador, sessaoId, onMachucadosChan
         ))}
       </div>
 
-      {/* Ataques */}
-      {poderesOfensivos.length > 0 && (
-        <>
-          <div className="pm-secao-titulo">Ataques</div>
-          <div className="pm-poderes-lista">
-            {poderesOfensivos.map(p => (
-              <div key={p.id} className="pm-poder-linha pm-poder-linha-clicavel"
-                onClick={() => rolarAtaque(p)}
-                title="Clique para rolar ataque">
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <img src={dadoIcon} alt="" style={{ width: 12, filter: 'invert(1)', opacity: 0.6 }} />
-                  <span className="pm-poder-nome">{p.nome}</span>
-                </div>
-                <span className="pm-poder-cd">CD {15 + p.graduacoes}</span>
-              </div>
-            ))}
+      {/* Ofensivo — ataque corpo a corpo fixo (outros ataques ficam descritos no texto de poderes) */}
+      <div className="pm-secao-titulo">Ofensivo</div>
+      <div className="pm-poderes-lista">
+        <div className="pm-poder-linha pm-poder-linha-clicavel"
+          onClick={rolarAtaqueCorpoACorpo}
+          title="Clique para rolar Ataque Corpo a Corpo">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <img src={dadoIcon} alt="" style={{ width: 12, filter: 'invert(1)', opacity: 0.6 }} />
+            <span className="pm-poder-nome">Ataque Corpo a Corpo</span>
           </div>
-        </>
-      )}
+          <span className="pm-poder-cd">1d20+{personagem.luta ?? 0}</span>
+        </div>
+      </div>
 
-      {/* Perícias — só para NPCs */}
-      {personagem.tipo === 'npc' && (
+      {/* Perícias — só para NPCs, e só as que têm graduação (o resto está descrito na ficha completa) */}
+      {personagem.tipo === 'npc' && periciasTreinadas.length > 0 && (
         <>
           <div
             className="pm-secao-titulo pm-secao-titulo-clicavel"
@@ -810,31 +808,29 @@ function CardPersonagem({ personagem, mostrarJogador, sessaoId, onMachucadosChan
           </div>
           {periciasAbertas && (
             <div className="pm-pericias-npc">
-              {regras.pericias.map(p => {
-                const info = PERICIA_INFO[p.nome]
-                const base = info?.chave ? (atr?.[info.chave] ?? 0) : 0
-                return (
-                  <div key={p.nome} className="pm-pericia-npc-linha"
-                    onClick={() => rolarPericia(p.nome)}
-                    title={`Rolar ${p.nome}: 1d20 + ${base}`}>
-                    <img src={dadoIcon} alt="" style={{ width: 11, filter: 'invert(1)', opacity: 0.5 }} />
-                    <span className="pm-pericia-npc-nome">{p.nome}</span>
-                    <span className="pm-pericia-npc-bonus">+{base}</span>
-                  </div>
-                )
-              })}
+              {periciasTreinadas.map((p, i) => (
+                <div key={i} className="pm-pericia-npc-linha"
+                  onClick={() => rolarPericia(p.nome, p.bonus)}
+                  title={`Rolar ${p.nome}: 1d20 + ${p.bonus}`}>
+                  <img src={dadoIcon} alt="" style={{ width: 11, filter: 'invert(1)', opacity: 0.5 }} />
+                  <span className="pm-pericia-npc-nome">{p.nome}</span>
+                  <span className="pm-pericia-npc-bonus">+{p.bonus}</span>
+                </div>
+              ))}
             </div>
           )}
         </>
       )}
 
-      {/* Complicações */}
-      {personagem.complicacoes?.length > 0 && (
+      {/* Complicações — texto livre, uma por linha */}
+      {complicacoesLinhas.length > 0 && (
         <>
           <div className="pm-secao-titulo">Complicações</div>
           <div className="pm-complicacoes">
-            {personagem.complicacoes.map(c => (
-              <span key={c.id} className="pm-comp-tag" title={c.descricao}>{c.titulo}</span>
+            {complicacoesLinhas.map((linha, i) => (
+              <span key={i} className="pm-comp-tag" title={linha}>
+                {linha.length > 40 ? linha.slice(0, 40) + '…' : linha}
+              </span>
             ))}
           </div>
         </>
